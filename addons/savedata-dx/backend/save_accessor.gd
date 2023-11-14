@@ -80,6 +80,17 @@ func read_common() -> void:
 		SaveHolder.common.set(key_name, value)
 
 
+# Reset save data to default
+func reset_slot():
+	SaveHolder.slot = SaveDataRoot.new()
+
+func reset_common():
+	SaveHolder.common = SaveDataCommon.new()
+
+func reset_all():
+	reset_common()
+	reset_slot()
+
 # Backend functions handling reading and writing of data
 
 func write_backend(name: String, resource) -> void:

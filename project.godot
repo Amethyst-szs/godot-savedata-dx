@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Save Load Plugin"
+config/tags=PackedStringArray("plugin")
 config/features=PackedStringArray("4.1", "Mobile")
 config/icon="res://icon.svg"
 
