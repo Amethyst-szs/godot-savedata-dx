@@ -8,8 +8,8 @@ extends Node
 # read on startup if it already exists
 
 # Create an empty save data slot and common file
-@onready var save_slot: SaveDataRoot = SaveDataRoot.new()
-@onready var save_common: SaveDataCommon = SaveDataCommon.new()
+@onready var slot: SaveDataRoot = SaveDataRoot.new()
+@onready var common: SaveDataCommon = SaveDataCommon.new()
 
 func _ready():
 	# Check if the common save file exists, and then read/create it

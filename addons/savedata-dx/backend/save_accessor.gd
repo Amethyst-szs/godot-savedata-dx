@@ -18,6 +18,21 @@ const SAVE_COMMON_NAME: String = "common"
 const SAVE_EXTENSION_NAME: String = ".bin"
 const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
 
+# Check/modify a save slot determined by the variable "active_save_slot"
+@export var active_save_slot: int = 0
+
+func set_active_slot(index: int) -> void:
+	active_save_slot = index
+	
+func is_active_slot_exist() -> bool:
+	return is_slot_exist(active_save_slot)
+	
+func write_active_slot() -> void:
+	write_slot(active_save_slot)
+	
+func read_active_slot() -> void:
+	read_slot(active_save_slot)
+
 # Check/modify a specific save slot, specified by index
 
 func is_slot_exist(index: int) -> bool:
@@ -25,7 +40,7 @@ func is_slot_exist(index: int) -> bool:
 	return FileAccess.file_exists(path)
 
 func write_slot(index: int) -> void:
-	write_backend("s%s" % [str(index)], SaveHolder.save_slot)
+	write_backend("s%s" % [str(index)], SaveHolder.slot)
 
 func read_slot(index: int) -> void:
 	# Get dictionary from file in save directory
@@ -34,11 +49,11 @@ func read_slot(index: int) -> void:
 		return
 	
 	# Create a new current save and write each key from the JSON into it
-	SaveHolder.save_slot = SaveDataRoot.new()
+	SaveHolder.slot = SaveDataRoot.new()
 	for key in range(dict.size()):
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
-		SaveHolder.save_slot.set(key_name, value)
+		SaveHolder.slot.set(key_name, value)
 
 
 # Check/modify the common save data shared between all slots
@@ -49,7 +64,7 @@ func is_common_exist() -> bool:
 	return FileAccess.file_exists(path)
 
 func write_common() -> void:
-	write_backend(SAVE_COMMON_NAME, SaveHolder.save_common)
+	write_backend(SAVE_COMMON_NAME, SaveHolder.common)
 
 func read_common() -> void:
 	# Get dictionary from file in save directory
@@ -58,11 +73,11 @@ func read_common() -> void:
 		return
 	
 	# Create a new common save and write each key from the JSON into it
-	SaveHolder.save_common = SaveDataCommon.new()
+	SaveHolder.common = SaveDataCommon.new()
 	for key in range(dict.size()):
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
-		SaveHolder.save_common.set(key_name, value)
+		SaveHolder.common.set(key_name, value)
 
 
 # Backend functions handling reading and writing of data
