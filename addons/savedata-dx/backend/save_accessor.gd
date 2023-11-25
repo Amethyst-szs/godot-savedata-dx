@@ -48,7 +48,7 @@ func read_slot(index: int) -> void:
 		return
 	
 	# Create a new current save and write each key from the JSON into it
-	SaveHolder.slot = SaveDataRoot.new()
+	SaveHolder.reset_slot()
 	for key in range(dict.size()):
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
@@ -72,23 +72,11 @@ func read_common() -> void:
 		return
 	
 	# Create a new common save and write each key from the JSON into it
-	SaveHolder.common = SaveDataCommon.new()
+	SaveHolder.reset_common()
 	for key in range(dict.size()):
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
 		SaveHolder.common.set(key_name, value)
-
-
-# Reset save data to default
-func reset_slot():
-	SaveHolder.slot = SaveDataRoot.new()
-
-func reset_common():
-	SaveHolder.common = SaveDataCommon.new()
-
-func reset_all():
-	reset_common()
-	reset_slot()
 
 # Backend functions handling reading and writing of data
 
@@ -112,34 +100,64 @@ func write_backend(name: String, object) -> void:
 	file.store_string(json_string)
 	file.close()
 
+func write_backend_with_json_string(path: String, json_string: String) -> void:
+	# Ensure the directory 100% exists to avoid issues
+	DirAccess.make_dir_absolute(SAVE_DIR)
+	
+	# Attempt to open new file and print an error if it fails
+	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.WRITE, KEY)
+	if file == null:
+		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
+		return
+	
+	# Write this data to disk
+	file.store_string(json_string)
+	file.close()
+
 func read_backend_by_name(name: String) -> Dictionary:
 	return read_backend(SAVE_DIR + name + SAVE_EXTENSION_NAME)
 
 func read_backend(path: String) -> Dictionary:
-	# Verify the file exists and return early if so
+	# Get the content of the path
+	var content = read_backend_raw_data(path)
+	if content == null or content.is_empty():
+		return {}
+	
+	# Convert this content into a JSON if possible
+	var data: Dictionary = JSON.parse_string(content)
+	if data == null:
+		printerr("Cannot parse %s as json string, data is null! (%s)" % [path, content])
+		return {}
+	
+	# Print message saying that the dictionary is empty if needed
+	if data.is_empty():
+		printerr("File at %s was parsed correctly, but contains no data" % [path])
+	
+	# Return the JSON data to then be converted into a object later
+	return data
+
+func read_backend_raw_data(path: String) -> String:
+	# Verify the file exists and return early if not
 	if not FileAccess.file_exists(path):
 		printerr("Cannot open non-existent file at %s" % [path])
-		return {}
+		return ""
 	
 	# Open the file and return if something goes wrong (another program controlling it for example)
 	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.READ, KEY)
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
-		return {}
+		return ""
 	
 	# Get the content of the open file
 	var content = file.get_as_text()
 	file.close()
 	
-	# Convert this content into a JSON if possible
-	var data = JSON.parse_string(content)
-	if data == null:
-		printerr("Cannot parse %s as json string, data is null! (%s)" % [path, content])
-		return {}
+	# Print message saying that the dictionary is empty if needed
+	if content.is_empty():
+		printerr("File at %s was parsed correctly, but contains no data" % [path])
 	
 	# Return the JSON data to then be converted into a object later
-	return data
-
+	return content
 
 # Recursive conversion from object to JSON dictionary
 

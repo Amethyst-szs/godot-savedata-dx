@@ -37,6 +37,12 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 3
 
+[node name="Label" type="Label" parent="Margin/VerticalSplit/Header/HBox"]
+layout_mode = 2
+text = "Mode:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="HeadEditMode" type="OptionButton" parent="Margin/VerticalSplit/Header/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -46,7 +52,7 @@ popup/item_0/text = "Slot"
 popup/item_0/id = 0
 popup/item_1/text = "Common"
 popup/item_1/id = 1
-popup/item_2/text = "Debugger"
+popup/item_2/text = "Inspector"
 popup/item_2/id = 2
 
 [node name="VSeparator" type="VSeparator" parent="Margin/VerticalSplit/Header/HBox"]
@@ -71,16 +77,19 @@ text = "Save"
 [node name="CodeEdit" type="CodeEdit" parent="Margin/VerticalSplit"]
 unique_name_in_owner = true
 layout_mode = 2
+text = "
+var progress = 50
+"
 draw_tabs = true
 minimap_draw = true
 minimap_width = 60
 caret_blink = true
 gutters_draw_line_numbers = true
 
-[node name="DebugSelect" type="FileDialog" parent="."]
+[node name="InspectorFileDialog" type="FileDialog" parent="."]
 title = "Open a File"
 position = Vector2i(0, 36)
-size = Vector2i(275, 162)
+size = Vector2i(312, 162)
 ok_button_text = "Open"
 dialog_hide_on_ok = true
 file_mode = 0
@@ -91,4 +100,4 @@ root_subfolder = "sv/"
 [connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadNew" to="." method="_on_head_new_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadLoad" to="." method="_on_head_load_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadSave" to="." method="_on_head_save_pressed"]
-[connection signal="file_selected" from="DebugSelect" to="." method="_on_debug_select_file"]
+[connection signal="file_selected" from="InspectorFileDialog" to="." method="_on_inspector_select_file"]
