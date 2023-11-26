@@ -165,7 +165,7 @@ func _on_head_add_pressed():
 		EditModeType.COMMON: common_import_file_dialog.popup()
 
 func _on_head_info_pressed():
-	OS.shell_open("https://github.com/Amethyst-szs/godot-savedata-dx")
+	OS.shell_open("https://github.com/Amethyst-szs/godot-savedata-dx/wiki")
 
 func _on_head_close_pressed():
 	_on_edit_mode_selected(edit_mode)

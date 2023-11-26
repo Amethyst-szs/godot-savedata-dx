@@ -32,6 +32,9 @@ signal load_slot_complete
 ## Emitted when loading the common data is completed successfully
 signal load_common_complete
 
+## Emitted when the active_save_slot is updated to a new, different value
+signal active_slot_changed
+
 ## Emitted when a save call fails
 signal save_error
 ## Emitted when a load call fails
@@ -40,9 +43,16 @@ signal load_error
 # Check/modify a save slot determined by the variable "active_save_slot"
 
 ## Current save slot, useful to manage which file is getting read/written to
-var active_save_slot: int = 1
+var active_save_slot: int = 1:
+	set (value):
+		if not active_save_slot == value:
+			active_slot_changed.emit()
+		
+		active_save_slot = value
+	get:
+		return active_save_slot
 
-## Sets the "active_save_slot" variable
+## Sets the "active_save_slot", and emits "active_slot_changed" if the new slot is different
 func set_active_slot(index: int) -> void:
 	active_save_slot = index
 
