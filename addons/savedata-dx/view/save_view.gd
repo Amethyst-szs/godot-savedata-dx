@@ -246,6 +246,8 @@ func code_editor_close(text: String = "Open a file or change edit mode in the to
 	code_editor.placeholder_text = text
 	head_button_save.disabled = true
 	code_error_footer.visible = false
+	
+	code_editor.clear_undo_history()
 
 func code_editor_open() -> void:
 	unsaved_changes = false
@@ -255,6 +257,8 @@ func code_editor_open() -> void:
 	code_editor.placeholder_text = ""
 	head_button_save.disabled = false
 	code_error_footer.visible = false
+	
+	code_editor.clear_undo_history()
 
 func code_editor_open_file(path: String) -> void:
 	# Verify the file exists and return early if not
@@ -285,6 +289,8 @@ func code_editor_open_file(path: String) -> void:
 	code_editor.text = content
 	code_editor.placeholder_text = ""
 	head_button_save.disabled = false
+	
+	code_editor.clear_undo_history()
 
 func code_editor_save_script() -> void:
 	# Attempt to open new file and print an error if it fails
@@ -319,6 +325,7 @@ func apply_theme() -> void:
 		highlight.add_keyword_color("var", set.get_setting("text_editor/theme/highlighting/keyword_color"))
 		highlight.add_keyword_color("const", set.get_setting("text_editor/theme/highlighting/keyword_color"))
 		
+		highlight.add_keyword_color("bool", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("int", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("float", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("String", set.get_setting("text_editor/theme/highlighting/base_type_color"))
