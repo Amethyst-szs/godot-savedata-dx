@@ -1,8 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cddem2i73sbap"]
 
 [ext_resource type="Script" path="res://addons/savedata-dx/view/save_view.gd" id="1_sit27"]
-
-[sub_resource type="SyntaxHighlighter" id="SyntaxHighlighter_it2yx"]
+[ext_resource type="CodeHighlighter" uid="uid://cva1xputdk2d7" path="res://addons/savedata-dx/view/highlighter.tres" id="2_cnvvi"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hnoec"]
 bg_color = Color(0.294118, 0, 0.0313726, 1)
@@ -126,12 +125,16 @@ vertical_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+highlight_all_occurrences = true
+highlight_current_line = true
 draw_tabs = true
-syntax_highlighter = SubResource("SyntaxHighlighter_it2yx")
+syntax_highlighter = ExtResource("2_cnvvi")
 minimap_draw = true
 minimap_width = 60
 caret_blink = true
 gutters_draw_line_numbers = true
+auto_brace_completion_enabled = true
+auto_brace_completion_highlight_matching = true
 
 [node name="ErrorFooter" type="PanelContainer" parent="Margin/VerticalSplit"]
 unique_name_in_owner = true

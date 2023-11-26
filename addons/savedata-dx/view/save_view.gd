@@ -10,28 +10,28 @@ const root_slot_path: String = "res://addons/savedata-dx/data_slot.gd"
 const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 
 # Header buttons
-@onready var head_button_edit_mode = %HeadEditMode
-@onready var head_button_add = %HeadAdd
-@onready var head_button_new = %HeadNew
-@onready var head_button_load = %HeadLoad
-@onready var head_button_save = %HeadSave
-@onready var head_button_close = %HeadClose
-@onready var head_file_name = %OpenFileTextLabel
+@onready var head_button_edit_mode := %HeadEditMode
+@onready var head_button_add := %HeadAdd
+@onready var head_button_new := %HeadNew
+@onready var head_button_load := %HeadLoad
+@onready var head_button_save := %HeadSave
+@onready var head_button_close := %HeadClose
+@onready var head_file_name := %OpenFileTextLabel
 
 # Code editor
-@onready var code_editor = %CodeEdit
-@onready var code_error_footer = %ErrorFooter
-@onready var code_error_text = %ErrorText
+@onready var code_editor := %CodeEdit
+@onready var code_error_footer := %ErrorFooter
+@onready var code_error_text := %ErrorText
 
 # Dialog popups
-@onready var inspector_file_dialog = $InspectorFileDialog
-@onready var inspector_save_fail_dialog = $InspectorSaveFailDialog
-@onready var slot_new_file_dialog = $SlotNewFileDialog
-@onready var slot_load_file_dialog = $SlotLoadFileDialog
-@onready var slot_import_file_dialog = $SlotImportFileDialog
-@onready var common_new_file_dialog = $CommonNewFileDialog
-@onready var common_load_file_dialog = $CommonLoadFileDialog
-@onready var common_import_file_dialog = $CommonImportFileDialog
+@onready var inspector_file_dialog := $InspectorFileDialog
+@onready var inspector_save_fail_dialog := $InspectorSaveFailDialog
+@onready var slot_new_file_dialog := $SlotNewFileDialog
+@onready var slot_load_file_dialog := $SlotLoadFileDialog
+@onready var slot_import_file_dialog := $SlotImportFileDialog
+@onready var common_new_file_dialog := $CommonNewFileDialog
+@onready var common_load_file_dialog := $CommonLoadFileDialog
+@onready var common_import_file_dialog := $CommonImportFileDialog
 
 # Current editor information
 var open_file_path: String:
@@ -278,6 +278,7 @@ func apply_theme() -> void:
 	if is_instance_valid(editor_plugin) and is_instance_valid(code_editor):
 		var scale: float = editor_plugin.get_editor_interface().get_editor_scale()
 		var set = editor_plugin.get_editor_interface().get_editor_settings()
+		var highlight: CodeHighlighter = code_editor.syntax_highlighter
 		
 		head_button_add.icon = get_theme_icon("Add", "EditorIcons")
 		head_button_new.icon = get_theme_icon("New", "EditorIcons")
@@ -286,17 +287,23 @@ func apply_theme() -> void:
 		head_button_close.icon = get_theme_icon("Back", "EditorIcons")
 		
 		code_editor.add_theme_color_override("background_color", set.get_setting("text_editor/theme/highlighting/background_color"))
-		code_editor.add_theme_color_override("current_line_color", set.get_setting("text_editor/theme/highlighting/current_line_color"))
-		code_editor.add_theme_color_override("error_line_color", set.get_setting("text_editor/theme/highlighting/error_line_color"))
-		code_editor.add_theme_color_override("titles_color", set.get_setting("text_editor/theme/highlighting/control_flow_keyword_color"))
-		code_editor.add_theme_color_override("text_color", set.get_setting("text_editor/theme/highlighting/text_color"))
-		code_editor.add_theme_color_override("conditions_color", set.get_setting("text_editor/theme/highlighting/keyword_color"))
-		code_editor.add_theme_color_override("mutations_color", set.get_setting("text_editor/theme/highlighting/function_color"))
-		code_editor.add_theme_color_override("members_color", set.get_setting("text_editor/theme/highlighting/member_variable_color"))
-		code_editor.add_theme_color_override("strings_color", set.get_setting("text_editor/theme/highlighting/string_color"))
-		code_editor.add_theme_color_override("numbers_color", set.get_setting("text_editor/theme/highlighting/number_color"))
-		code_editor.add_theme_color_override("symbols_color", set.get_setting("text_editor/theme/highlighting/symbol_color"))
-		code_editor.add_theme_color_override("comments_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
-		code_editor.add_theme_color_override("jumps_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
-		code_editor.add_theme_color_override("comments_color", Color(set.get_setting("text_editor/theme/highlighting/control_flow_keyword_color"), 0.7))
-		code_editor.add_theme_color_override("jumps_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
+		highlight.number_color = set.get_setting("text_editor/theme/highlighting/number_color")
+		highlight.symbol_color = set.get_setting("text_editor/theme/highlighting/symbol_color")
+		highlight.function_color = set.get_setting("text_editor/theme/highlighting/function_color")
+		highlight.member_variable_color = set.get_setting("text_editor/theme/highlighting/member_variable_color")
+		
+		highlight.add_keyword_color("var", set.get_setting("text_editor/theme/highlighting/keyword_color"))
+		highlight.add_keyword_color("const", set.get_setting("text_editor/theme/highlighting/keyword_color"))
+		
+		highlight.add_keyword_color("int", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("float", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("String", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector2", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector2i", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector2i", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector3", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector3i", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector4", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Vector4i", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Quaternion", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Array", set.get_setting("text_editor/theme/highlighting/base_type_color"))
