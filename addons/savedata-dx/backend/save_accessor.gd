@@ -177,6 +177,8 @@ func object_to_dict(obj: Object) -> Dictionary:
 		match(typeof(obj.get(member.name))):
 			TYPE_OBJECT: # Call self and create sub-dictionary for object
 				dict[member.name] = object_to_dict(obj.get(member.name))
+			TYPE_ARRAY: # Expand the array with function and add to dictionary
+				dict[member.name] = expand_array_for_dict(obj.get(member.name))
 			TYPE_VECTOR2, TYPE_VECTOR2I:
 				dict[member.name] = dict_parse.parse_vector2(obj.get(member.name))
 			TYPE_VECTOR3, TYPE_VECTOR3I:
@@ -189,3 +191,28 @@ func object_to_dict(obj: Object) -> Dictionary:
 				dict[member.name] = obj.get(member.name)
 	
 	return dict
+
+func expand_array_for_dict(list: Array) -> Array:
+	# Create empty array
+	var new_list: Array = []
+	
+	# Iterate through all items
+	for item in list:
+		# Write the member to dictionary depending on type of member
+		match(typeof(item)):
+			TYPE_OBJECT: # Call object to dict converter for item
+				new_list.push_back(object_to_dict(item))
+			TYPE_ARRAY: # Create sub array
+				new_list.push_back(expand_array_for_dict(item))
+			TYPE_VECTOR2, TYPE_VECTOR2I:
+				new_list.push_back(dict_parse.parse_vector2(item))
+			TYPE_VECTOR3, TYPE_VECTOR3I:
+				new_list.push_back(dict_parse.parse_vector3(item))
+			TYPE_VECTOR4, TYPE_VECTOR4I, TYPE_QUATERNION:
+				new_list.push_back(dict_parse.parse_vector4(item))
+			TYPE_COLOR:
+				new_list.push_back(dict_parse.parse_color(item))
+			_: # Default behavior
+				new_list.push_back(item)
+	
+	return new_list

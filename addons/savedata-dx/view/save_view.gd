@@ -330,4 +330,5 @@ func apply_theme() -> void:
 		highlight.add_keyword_color("Vector4", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("Vector4i", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("Quaternion", set.get_setting("text_editor/theme/highlighting/base_type_color"))
+		highlight.add_keyword_color("Color", set.get_setting("text_editor/theme/highlighting/base_type_color"))
 		highlight.add_keyword_color("Array", set.get_setting("text_editor/theme/highlighting/base_type_color"))
