@@ -11,8 +11,8 @@ const slot_script = preload("res://addons/savedata-dx/data_slot.gd")
 const common_script = preload("res://addons/savedata-dx/data_common.gd")
 
 # Create an empty save data slot and common file
-var slot = slot_script.new()
-var common = common_script.new()
+var slot: slot_script = slot_script.new()
+var common: common_script = common_script.new()
 
 func _ready():
 	# Check if the common save file exists, and then read/create it

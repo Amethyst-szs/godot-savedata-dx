@@ -17,6 +17,12 @@ const SAVE_COMMON_NAME: String = "common"
 const SAVE_EXTENSION_NAME: String = ".bin"
 const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
 
+# Signal messages
+signal save_slot_complete
+signal save_common_complete
+signal load_slot_complete
+signal load_common_complete
+
 # Check/modify a save slot determined by the variable "active_save_slot"
 @export var active_save_slot: int = 0
 
@@ -40,6 +46,9 @@ func is_slot_exist(index: int) -> bool:
 
 func write_slot(index: int) -> void:
 	write_backend("s%s" % [str(index)], SaveHolder.slot)
+	
+	# Tell the signal that the save is finished
+	save_slot_complete.emit()
 
 func read_slot(index: int) -> void:
 	# Get dictionary from file in save directory
@@ -53,6 +62,9 @@ func read_slot(index: int) -> void:
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
 		SaveHolder.slot.set(key_name, value)
+	
+	# Tell the signal that the load is finished
+	load_slot_complete.emit()
 
 
 # Check/modify the common save data shared between all slots
@@ -64,6 +76,9 @@ func is_common_exist() -> bool:
 
 func write_common() -> void:
 	write_backend(SAVE_COMMON_NAME, SaveHolder.common)
+	
+	# Tell the signal that the save is finished
+	save_common_complete.emit()
 
 func read_common() -> void:
 	# Get dictionary from file in save directory
@@ -77,6 +92,9 @@ func read_common() -> void:
 		var key_name: String = dict.keys()[key]
 		var value = dict.values()[key]
 		SaveHolder.common.set(key_name, value)
+	
+	# Tell the signal that the load is finished
+	load_common_complete.emit()
 
 # Backend functions handling reading and writing of data
 
