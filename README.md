@@ -1,12 +1,17 @@
-# Godot SaveData DX Plugin
+# Godot SaveData DX Plugin  
 *A plugin for Godot adding a simple, convenient, and secure save data system*  
+![icon](https://github.com/Amethyst-szs/godot-savedata-dx/assets/62185604/3bc7d641-0708-4ab9-b24e-47a542322e58)  
 
 ## Explanation
 This plugin was created to avoid the issues with the usual JSON or Resource saving methods used by Godot developers. Working with JSON can prove clunky and waste a lot of development time on bugs and
 annoying copy-paste work, and using Resources has a major security vulnerability allowing arbitrary code execution.  
-  
+
+![image](https://github.com/Amethyst-szs/godot-savedata-dx/assets/62185604/aff7cde3-61be-471d-842a-462f2b907b58)
+
 This plugin attempts to be the best of both worlds, combining the convience of the resource method with the safety and security of the JSON method. On top of that, it provides some additonal tools
 to make managing your game's save files easier.
+
+![image](https://github.com/Amethyst-szs/godot-savedata-dx/assets/62185604/cd7918e5-556f-4f30-8089-3dbc3c946b7d)
 
 ## Installation
 1. Download a copy of the repo
