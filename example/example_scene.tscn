@@ -1,0 +1,86 @@
+[gd_scene load_steps=2 format=3 uid="uid://3l7o1u8eqkp3"]
+
+[ext_resource type="Script" path="res://example/example_scene.gd" id="1_gg2b8"]
+
+[node name="ExampleScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gg2b8")
+
+[node name="Notifications" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="Notifications"]
+layout_mode = 2
+
+[node name="SignalHeader" type="Label" parent="Notifications/VBox"]
+layout_mode = 2
+text = "Signal Events:"
+
+[node name="SignalNotif" type="Label" parent="Notifications/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "None yet"
+
+[node name="Header" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 31.0
+grow_horizontal = 2
+
+[node name="SaveLoad" type="HBoxContainer" parent="Header"]
+layout_mode = 2
+alignment = 1
+
+[node name="SpinBox" type="SpinBox" parent="Header/SaveLoad"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 5.0
+value = 1.0
+rounded = true
+prefix = "Save Slot"
+
+[node name="ButtonSave" type="Button" parent="Header/SaveLoad"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Save"
+
+[node name="ButtonLoad" type="Button" parent="Header/SaveLoad"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Load"
+
+[node name="HSeparator2" type="HSeparator" parent="Header"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Header"]
+layout_mode = 2
+size_flags_vertical = 4
+bbcode_enabled = true
+text = "Progress Value: [i](this is saved to the specific save slot)[/i]"
+fit_content = true
+scroll_active = false
+
+[node name="ProgressSlider" type="HSlider" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[connection signal="value_changed" from="Header/SaveLoad/SpinBox" to="." method="_on_spin_box_value_changed"]
+[connection signal="pressed" from="Header/SaveLoad/ButtonSave" to="." method="_on_button_save_pressed"]
+[connection signal="pressed" from="Header/SaveLoad/ButtonLoad" to="." method="_on_button_load_pressed"]
+[connection signal="value_changed" from="Header/ProgressSlider" to="." method="_on_h_slider_changed"]
