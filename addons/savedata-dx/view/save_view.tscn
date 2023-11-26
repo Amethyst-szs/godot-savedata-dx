@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://cddem2i73sbap"]
+[gd_scene load_steps=3 format=3 uid="uid://cddem2i73sbap"]
 
 [ext_resource type="Script" path="res://addons/savedata-dx/view/save_view.gd" id="1_sit27"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hnoec"]
+bg_color = Color(0.294118, 0, 0.0313726, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_blend = true
 
 [node name="SaveView" type="Control"]
 layout_mode = 3
@@ -12,6 +19,10 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_sit27")
+
+[node name="CompileTimer" type="Timer" parent="."]
+wait_time = 0.8
+one_shot = true
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -25,25 +36,27 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VerticalSplit" type="SplitContainer" parent="Margin"]
+[node name="VerticalSplit" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-vertical = true
 
 [node name="Header" type="PanelContainer" parent="Margin/VerticalSplit"]
 layout_mode = 2
 
-[node name="HBox" type="HBoxContainer" parent="Margin/VerticalSplit/Header"]
+[node name="VBox" type="VBoxContainer" parent="Margin/VerticalSplit/Header"]
+layout_mode = 2
+
+[node name="Top" type="HBoxContainer" parent="Margin/VerticalSplit/Header/VBox"]
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 3
 
-[node name="Label" type="Label" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="Label" type="Label" parent="Margin/VerticalSplit/Header/VBox/Top"]
 layout_mode = 2
 text = "Mode:"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="HeadEditMode" type="OptionButton" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="HeadEditMode" type="OptionButton" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
 item_count = 3
@@ -55,49 +68,159 @@ popup/item_1/id = 1
 popup/item_2/text = "Inspector"
 popup/item_2/id = 2
 
-[node name="VSeparator" type="VSeparator" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="VSeparator" type="VSeparator" parent="Margin/VerticalSplit/Header/VBox/Top"]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="HeadNew" type="Button" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="HeadNew" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "New"
+tooltip_text = "Create new resource
+(Ctrl+N)"
+text = " New"
 
-[node name="HeadLoad" type="Button" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="HeadLoad" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Open"
+tooltip_text = "Load resource
+(Ctrl+O)"
+text = " Open"
 
-[node name="HeadSave" type="Button" parent="Margin/VerticalSplit/Header/HBox"]
+[node name="HeadSave" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Save"
+tooltip_text = "Save data to disk
+(Ctrl+S)"
+text = " Save"
+
+[node name="HeadAdd" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "temporary tooltip lol"
+text = " Import"
+
+[node name="HSeparator" type="HSeparator" parent="Margin/VerticalSplit/Header/VBox"]
+layout_mode = 2
+
+[node name="Bottom" type="HBoxContainer" parent="Margin/VerticalSplit/Header/VBox"]
+layout_mode = 2
+
+[node name="HeadClose" type="Button" parent="Margin/VerticalSplit/Header/VBox/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Close current file or return to root
+(Ctrl+W)"
+text = " Close"
+flat = true
+
+[node name="OpenFileTextLabel" type="Label" parent="Margin/VerticalSplit/Header/VBox/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.658824, 0.658824, 0.658824, 1)
+text = "res://addons/savedata-dx/data_slot.gd"
+vertical_alignment = 1
 
 [node name="CodeEdit" type="CodeEdit" parent="Margin/VerticalSplit"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "
-var progress = 50
-"
+size_flags_vertical = 3
+text = "var progress = 50
+var test_variable: String = \"Test\"
+var test = 40
+var sub_data = import.new()"
 draw_tabs = true
 minimap_draw = true
 minimap_width = 60
 caret_blink = true
 gutters_draw_line_numbers = true
 
+[node name="ErrorFooter" type="PanelContainer" parent="Margin/VerticalSplit"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hnoec")
+
+[node name="ErrorText" type="Label" parent="Margin/VerticalSplit/ErrorFooter"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Error"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="InspectorFileDialog" type="FileDialog" parent="."]
 title = "Open a File"
-position = Vector2i(0, 36)
-size = Vector2i(312, 162)
+initial_position = 2
+size = Vector2i(312, 500)
 ok_button_text = "Open"
 dialog_hide_on_ok = true
 file_mode = 0
 access = 1
 root_subfolder = "sv/"
 
-[connection signal="item_selected" from="Margin/VerticalSplit/Header/HBox/HeadEditMode" to="." method="_on_edit_mode_selected"]
-[connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadNew" to="." method="_on_head_new_pressed"]
-[connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadLoad" to="." method="_on_head_load_pressed"]
-[connection signal="pressed" from="Margin/VerticalSplit/Header/HBox/HeadSave" to="." method="_on_head_save_pressed"]
+[node name="InspectorSaveFailDialog" type="AcceptDialog" parent="."]
+title = "Save Failed"
+initial_position = 2
+size = Vector2i(640, 240)
+dialog_text = "The save slot open in the inspector could not be saved!
+Check the error display for additional info"
+dialog_autowrap = true
+
+[node name="SlotNewFileDialog" type="FileDialog" parent="."]
+title = "Input new file name"
+initial_position = 2
+size = Vector2i(500, 600)
+root_subfolder = "res://addons/savedata-dx/slot/"
+
+[node name="SlotLoadFileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+initial_position = 2
+size = Vector2i(500, 600)
+ok_button_text = "Open"
+file_mode = 0
+root_subfolder = "res://addons/savedata-dx/slot/"
+
+[node name="SlotImportFileDialog" type="FileDialog" parent="."]
+title = "Import a script"
+initial_position = 2
+size = Vector2i(500, 600)
+ok_button_text = "Open"
+file_mode = 0
+root_subfolder = "res://addons/savedata-dx/slot/"
+
+[node name="CommonNewFileDialog" type="FileDialog" parent="."]
+title = "Input new file name"
+initial_position = 2
+size = Vector2i(500, 600)
+root_subfolder = "res://addons/savedata-dx/common/"
+
+[node name="CommonLoadFileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+initial_position = 2
+size = Vector2i(500, 600)
+ok_button_text = "Open"
+file_mode = 0
+root_subfolder = "res://addons/savedata-dx/common/"
+
+[node name="CommonImportFileDialog" type="FileDialog" parent="."]
+title = "Import a script"
+initial_position = 2
+size = Vector2i(500, 600)
+ok_button_text = "Open"
+file_mode = 0
+root_subfolder = "res://addons/savedata-dx/common/"
+
+[connection signal="timeout" from="CompileTimer" to="." method="_on_compile_timer_timeout"]
+[connection signal="item_selected" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditMode" to="." method="_on_edit_mode_selected"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadNew" to="." method="_on_head_new_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadLoad" to="." method="_on_head_load_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSave" to="." method="_on_head_save_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadAdd" to="." method="_on_head_add_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Bottom/HeadClose" to="." method="_on_head_close_pressed"]
+[connection signal="text_changed" from="Margin/VerticalSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
 [connection signal="file_selected" from="InspectorFileDialog" to="." method="_on_inspector_select_file"]
+[connection signal="file_selected" from="SlotNewFileDialog" to="." method="_on_slot_new_file_dialog"]
+[connection signal="file_selected" from="SlotLoadFileDialog" to="." method="_on_slot_load_file_dialog"]
+[connection signal="file_selected" from="SlotImportFileDialog" to="." method="_on_slot_import_file_dialog"]
+[connection signal="file_selected" from="CommonNewFileDialog" to="." method="_on_slot_new_file_dialog"]
+[connection signal="file_selected" from="CommonLoadFileDialog" to="." method="_on_slot_load_file_dialog"]
+[connection signal="file_selected" from="CommonImportFileDialog" to="." method="_on_slot_import_file_dialog"]

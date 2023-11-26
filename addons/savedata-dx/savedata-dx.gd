@@ -15,6 +15,7 @@ func _enter_tree():
 	
 	# Instantiate save view main screen and hide from view
 	save_view = SaveView.instantiate()
+	save_view.editor_plugin = self
 	get_editor_interface().get_editor_main_screen().add_child(save_view)
 	_make_visible(false)
 
@@ -38,4 +39,4 @@ func _get_plugin_name():
 	return "SaveData"
 
 func _get_plugin_icon():
-	return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+	return get_editor_interface().get_base_control().get_theme_icon("Save", "EditorIcons")
