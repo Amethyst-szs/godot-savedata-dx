@@ -48,7 +48,7 @@ layout_mode = 2
 
 [node name="Top" type="HBoxContainer" parent="Margin/VerticalSplit/Header/VBox"]
 layout_mode = 2
-size_flags_vertical = 0
+size_flags_vertical = 4
 theme_override_constants/separation = 3
 
 [node name="Label" type="Label" parent="Margin/VerticalSplit/Header/VBox/Top"]
@@ -62,11 +62,11 @@ unique_name_in_owner = true
 layout_mode = 2
 item_count = 3
 selected = 0
-popup/item_0/text = "Slot"
+popup/item_0/text = "Inspector"
 popup/item_0/id = 0
-popup/item_1/text = "Common"
+popup/item_1/text = "Slot"
 popup/item_1/id = 1
-popup/item_2/text = "Inspector"
+popup/item_2/text = "Common"
 popup/item_2/id = 2
 
 [node name="VSeparator" type="VSeparator" parent="Margin/VerticalSplit/Header/VBox/Top"]
@@ -100,6 +100,14 @@ layout_mode = 2
 tooltip_text = "Import another script using preload
 (Ctrl+I)"
 text = " Import"
+
+[node name="HeadInfo" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+text = "Help "
+icon_alignment = 2
 
 [node name="HSeparator" type="HSeparator" parent="Margin/VerticalSplit/Header/VBox"]
 layout_mode = 2
@@ -217,6 +225,7 @@ root_subfolder = "res://addons/savedata-dx/common/"
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadLoad" to="." method="_on_head_load_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSave" to="." method="_on_head_save_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadAdd" to="." method="_on_head_add_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadInfo" to="." method="_on_head_info_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Bottom/HeadClose" to="." method="_on_head_close_pressed"]
 [connection signal="text_changed" from="Margin/VerticalSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
 [connection signal="file_selected" from="InspectorFileDialog" to="." method="_on_inspector_select_file"]

@@ -15,6 +15,7 @@ const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 @onready var head_button_new := %HeadNew
 @onready var head_button_load := %HeadLoad
 @onready var head_button_save := %HeadSave
+@onready var head_button_info := %HeadInfo
 @onready var head_button_close := %HeadClose
 @onready var head_file_name := %OpenFileTextLabel
 
@@ -43,9 +44,9 @@ var open_file_path: String:
 
 var edit_mode: EditModeType
 enum EditModeType {
+	INSPECTOR,
 	SLOT,
-	COMMON,
-	INSPECTOR
+	COMMON
 }
 
 # Reference to editor plugin
@@ -56,7 +57,7 @@ func _ready() -> void:
 		return
 		
 	apply_theme()
-	_on_edit_mode_selected(EditModeType.SLOT)
+	_on_edit_mode_selected(EditModeType.INSPECTOR)
 
 func _input(event: InputEvent) -> void:
 	if not visible: return
@@ -97,9 +98,6 @@ func setup_common_mode() -> void:
 	head_button_add.disabled = false
 	
 func setup_inspector_mode() -> void:
-	# Popup file dialog in the user's save directory
-	inspector_file_dialog.popup()
-	
 	# Toggle button activeness
 	head_button_new.disabled = true
 	head_button_add.disabled = true
@@ -153,6 +151,9 @@ func _on_head_add_pressed():
 	match edit_mode:
 		EditModeType.SLOT: slot_import_file_dialog.popup()
 		EditModeType.COMMON: common_import_file_dialog.popup()
+
+func _on_head_info_pressed():
+	OS.shell_open("https://github.com/Amethyst-szs/godot-savedata-dx")
 
 func _on_head_close_pressed():
 	_on_edit_mode_selected(edit_mode)
@@ -284,6 +285,7 @@ func apply_theme() -> void:
 		head_button_new.icon = get_theme_icon("New", "EditorIcons")
 		head_button_load.icon = get_theme_icon("Load", "EditorIcons")
 		head_button_save.icon = get_theme_icon("Save", "EditorIcons")
+		head_button_info.icon = get_theme_icon("Help", "EditorIcons")
 		head_button_close.icon = get_theme_icon("Back", "EditorIcons")
 		
 		code_editor.add_theme_color_override("background_color", set.get_setting("text_editor/theme/highlighting/background_color"))
