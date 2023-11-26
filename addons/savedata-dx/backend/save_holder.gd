@@ -1,17 +1,23 @@
 extends Node
 
-# SaveDataDX plugin by Amethyst-szs
-# - SaveHolder -
-#
-# An autoload singleton storing and allowing access to your current save game
-# and the common data shared across all save files. The common data is automatically
-# read on startup if it already exists
+## SaveDataDX plugin by Amethyst-szs - 
+## Stores and allows access to your current save data
+## This class is meant to be used an autoload singleton,
+## access it via "SaveHolder" in your scritps. 
+class_name SaveHolderPlugin
 
+# Load in scripts
+
+## Preload script for save slot
 const slot_script = preload("res://addons/savedata-dx/data_slot.gd")
+## Preload script for common data
 const common_script = preload("res://addons/savedata-dx/data_common.gd")
 
-# Create an empty save data slot and common file
+# Create a new slot and common file using their default values
+
+## Access and modify your save slot
 var slot: slot_script = slot_script.new()
+## Access and modify your common data
 var common: common_script = common_script.new()
 
 func _ready():
@@ -21,13 +27,16 @@ func _ready():
 	else:
 		SaveAccessor.write_common()
 
-# Reset save data to default
+## Resets the data in the slot variable to default
 func reset_slot():
 	slot = slot_script.new()
 
+## Resets the data in the common variable to default
 func reset_common():
 	common = common_script.new()
 
+## Resets the data in the slot and common variable to default. 
+## Not recommended unless you're including a full "factory reset" style feature
 func reset_all():
 	reset_common()
 	reset_slot()

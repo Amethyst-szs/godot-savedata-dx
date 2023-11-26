@@ -1,7 +1,7 @@
 @tool
 extends Control
 
-# SaveData accessor script, this is added here so the accessor doesn't have to include @tool
+# SaveData accessor script
 const accessor_script = preload("res://addons/savedata-dx/backend/save_accessor.gd")
 var accessor_inst = accessor_script.new()
 
@@ -155,7 +155,7 @@ func _on_head_save_pressed():
 			inspector_save_fail_dialog.popup()
 			return
 			
-		accessor_inst.write_backend_with_json_string(open_file_path, code_editor.text)
+		accessor_inst._write_backend_with_json_string(open_file_path, code_editor.text)
 	else: # If this isn't inspector mode, write script to disk normally
 		code_editor_save_script()
 
@@ -194,7 +194,7 @@ func _on_slot_import_file_dialog(path: String) -> void:
 
 # Convert file path to dictionary
 func decrypt_save(path: String) -> String:
-	return accessor_inst.read_backend_raw_data(path)
+	return accessor_inst._read_backend_raw_data(path)
 
 # Called upon selecting a file in the debugger mode
 func _on_inspector_select_file(path: String) -> void:
