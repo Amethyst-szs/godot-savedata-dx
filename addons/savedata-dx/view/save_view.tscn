@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cddem2i73sbap"]
+[gd_scene load_steps=4 format=3 uid="uid://cddem2i73sbap"]
 
 [ext_resource type="Script" path="res://addons/savedata-dx/view/save_view.gd" id="1_sit27"]
+
+[sub_resource type="SyntaxHighlighter" id="SyntaxHighlighter_it2yx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hnoec"]
 bg_color = Color(0.294118, 0, 0.0313726, 1)
@@ -96,7 +98,8 @@ text = " Save"
 [node name="HeadAdd" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "temporary tooltip lol"
+tooltip_text = "Import another script using preload
+(Ctrl+I)"
 text = " Import"
 
 [node name="HSeparator" type="HSeparator" parent="Margin/VerticalSplit/Header/VBox"]
@@ -117,18 +120,14 @@ flat = true
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.658824, 0.658824, 0.658824, 1)
-text = "res://addons/savedata-dx/data_slot.gd"
 vertical_alignment = 1
 
 [node name="CodeEdit" type="CodeEdit" parent="Margin/VerticalSplit"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "var progress = 50
-var test_variable: String = \"Test\"
-var test = 40
-var sub_data = import.new()"
 draw_tabs = true
+syntax_highlighter = SubResource("SyntaxHighlighter_it2yx")
 minimap_draw = true
 minimap_width = 60
 caret_blink = true
@@ -180,7 +179,7 @@ file_mode = 0
 root_subfolder = "res://addons/savedata-dx/slot/"
 
 [node name="SlotImportFileDialog" type="FileDialog" parent="."]
-title = "Import a script"
+title = "Open a File"
 initial_position = 2
 size = Vector2i(500, 600)
 ok_button_text = "Open"
@@ -202,7 +201,7 @@ file_mode = 0
 root_subfolder = "res://addons/savedata-dx/common/"
 
 [node name="CommonImportFileDialog" type="FileDialog" parent="."]
-title = "Import a script"
+title = "Open a File"
 initial_position = 2
 size = Vector2i(500, 600)
 ok_button_text = "Open"

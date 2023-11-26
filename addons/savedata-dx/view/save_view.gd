@@ -52,6 +52,9 @@ enum EditModeType {
 var editor_plugin: EditorPlugin
 
 func _ready() -> void:
+	if not is_instance_valid(editor_plugin):
+		return
+		
 	apply_theme()
 	_on_edit_mode_selected(EditModeType.SLOT)
 
@@ -72,6 +75,9 @@ func _input(event: InputEvent) -> void:
 			"Ctrl+W", "Command+W":
 				get_viewport().set_input_as_handled()
 				_on_head_close_pressed()
+			"Ctrl+I", "Command+I":
+				get_viewport().set_input_as_handled()
+				_on_head_add_pressed()
 
 # Common utility functions
 func setup_slot_mode() -> void:
@@ -271,10 +277,26 @@ func code_editor_save_script() -> void:
 func apply_theme() -> void:
 	if is_instance_valid(editor_plugin) and is_instance_valid(code_editor):
 		var scale: float = editor_plugin.get_editor_interface().get_editor_scale()
-		var editor_settings = editor_plugin.get_editor_interface().get_editor_settings()
+		var set = editor_plugin.get_editor_interface().get_editor_settings()
 		
 		head_button_add.icon = get_theme_icon("Add", "EditorIcons")
 		head_button_new.icon = get_theme_icon("New", "EditorIcons")
 		head_button_load.icon = get_theme_icon("Load", "EditorIcons")
 		head_button_save.icon = get_theme_icon("Save", "EditorIcons")
 		head_button_close.icon = get_theme_icon("Back", "EditorIcons")
+		
+		code_editor.add_theme_color_override("background_color", set.get_setting("text_editor/theme/highlighting/background_color"))
+		code_editor.add_theme_color_override("current_line_color", set.get_setting("text_editor/theme/highlighting/current_line_color"))
+		code_editor.add_theme_color_override("error_line_color", set.get_setting("text_editor/theme/highlighting/error_line_color"))
+		code_editor.add_theme_color_override("titles_color", set.get_setting("text_editor/theme/highlighting/control_flow_keyword_color"))
+		code_editor.add_theme_color_override("text_color", set.get_setting("text_editor/theme/highlighting/text_color"))
+		code_editor.add_theme_color_override("conditions_color", set.get_setting("text_editor/theme/highlighting/keyword_color"))
+		code_editor.add_theme_color_override("mutations_color", set.get_setting("text_editor/theme/highlighting/function_color"))
+		code_editor.add_theme_color_override("members_color", set.get_setting("text_editor/theme/highlighting/member_variable_color"))
+		code_editor.add_theme_color_override("strings_color", set.get_setting("text_editor/theme/highlighting/string_color"))
+		code_editor.add_theme_color_override("numbers_color", set.get_setting("text_editor/theme/highlighting/number_color"))
+		code_editor.add_theme_color_override("symbols_color", set.get_setting("text_editor/theme/highlighting/symbol_color"))
+		code_editor.add_theme_color_override("comments_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
+		code_editor.add_theme_color_override("jumps_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
+		code_editor.add_theme_color_override("comments_color", Color(set.get_setting("text_editor/theme/highlighting/control_flow_keyword_color"), 0.7))
+		code_editor.add_theme_color_override("jumps_color", set.get_setting("text_editor/theme/highlighting/comment_color"))
