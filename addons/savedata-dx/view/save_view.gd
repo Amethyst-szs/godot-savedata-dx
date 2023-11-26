@@ -42,6 +42,17 @@ var open_file_path: String:
 	get:
 		return open_file_path
 
+var unsaved_changes: bool = false:
+	set (value):
+		if value:
+			head_button_save.text = " Save*"
+		else:
+			head_button_save.text = " Save"
+		
+		unsaved_changes = value
+	get:
+		return unsaved_changes
+
 var edit_mode: EditModeType
 enum EditModeType {
 	INSPECTOR,
@@ -86,21 +97,21 @@ func setup_slot_mode() -> void:
 	code_editor_open_file(root_slot_path)
 	
 	# Toggle button activeness
-	head_button_new.disabled = false
-	head_button_add.disabled = false
+	head_button_new.visible = true
+	head_button_add.visible = true
 	
 func setup_common_mode() -> void:
 	# Open the root of the common script in code editor
 	code_editor_open_file(root_common_path)
 	
 	# Toggle button activeness
-	head_button_new.disabled = false
-	head_button_add.disabled = false
+	head_button_new.visible = true
+	head_button_add.visible = true
 	
 func setup_inspector_mode() -> void:
 	# Toggle button activeness
-	head_button_new.disabled = true
-	head_button_add.disabled = true
+	head_button_new.visible = false
+	head_button_add.visible = false
 
 # Update the interface when the edit mode is changed
 func _on_edit_mode_selected(index: int) -> void:
@@ -110,6 +121,7 @@ func _on_edit_mode_selected(index: int) -> void:
 	
 	# Reset the code editor panel
 	code_editor_close()
+	head_button_close.disabled = true
 	
 	# Configure depending on selected option in menu
 	match(index):
@@ -134,7 +146,7 @@ func _on_head_save_pressed():
 	if open_file_path.is_empty():
 		return
 	
-	head_button_save.text = " Save"
+	unsaved_changes = false
 	
 	# If in inspector mode, verify user input and then write to disk
 	if edit_mode == EditModeType.INSPECTOR:
@@ -162,9 +174,11 @@ func _on_head_close_pressed():
 
 func _on_slot_new_file_dialog(path: String) -> void:
 	open_file_path = path
+	head_button_close.disabled = false
 	code_editor_open()
 
 func _on_slot_load_file_dialog(path: String) -> void:
+	head_button_close.disabled = false
 	code_editor_open_file(path)
 
 func _on_slot_import_file_dialog(path: String) -> void:
@@ -193,13 +207,14 @@ func _on_inspector_select_file(path: String) -> void:
 	open_file_path = path
 	
 	# Setup code editor
+	head_button_close.disabled = false
 	code_editor_open()
 	code_editor.text = data
 
 # Code editor management
 
 func _on_code_edit_text_changed():
-	head_button_save.text = " Save*"
+	unsaved_changes = true
 	$CompileTimer.start()
 
 func _on_compile_timer_timeout():
@@ -223,6 +238,9 @@ func _on_compile_timer_timeout():
 	head_button_save.disabled = false
 
 func code_editor_close(text: String = "Open a file or change edit mode in the top bar") -> void:
+	unsaved_changes = false
+	
+	open_file_path = ""
 	code_editor.editable = false
 	code_editor.text = ""
 	code_editor.placeholder_text = text
@@ -230,6 +248,8 @@ func code_editor_close(text: String = "Open a file or change edit mode in the to
 	code_error_footer.visible = false
 
 func code_editor_open() -> void:
+	unsaved_changes = false
+	
 	code_editor.editable = true
 	code_editor.text = ""
 	code_editor.placeholder_text = ""
@@ -256,6 +276,8 @@ func code_editor_open_file(path: String) -> void:
 	var first_line: int = content.find("\n")
 	if not first_line == -1:
 		content = content.substr(first_line + 1)
+	
+	unsaved_changes = false
 	
 	# Setup code editor
 	open_file_path = path
