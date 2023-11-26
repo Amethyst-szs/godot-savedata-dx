@@ -23,6 +23,9 @@ signal save_common_complete
 signal load_slot_complete
 signal load_common_complete
 
+signal save_error
+signal load_error
+
 # Check/modify a save slot determined by the variable "active_save_slot"
 @export var active_save_slot: int = 0
 
@@ -45,15 +48,18 @@ func is_slot_exist(index: int) -> bool:
 	return FileAccess.file_exists(path)
 
 func write_slot(index: int) -> void:
-	write_backend("s%s" % [str(index)], SaveHolder.slot)
+	if write_backend("s%s" % [str(index)], SaveHolder.slot):
+		# Tell the signal that the save is finished successfully
+		save_slot_complete.emit()
+	else:
+		save_error.emit()
 	
-	# Tell the signal that the save is finished
-	save_slot_complete.emit()
 
 func read_slot(index: int) -> void:
 	# Get dictionary from file in save directory
 	var dict: Dictionary = read_backend_by_name("s%s" % [str(index)])
 	if dict.is_empty():
+		load_error.emit()
 		return
 	
 	# Create a new current save and write each key from the JSON into it
@@ -75,15 +81,17 @@ func is_common_exist() -> bool:
 	return FileAccess.file_exists(path)
 
 func write_common() -> void:
-	write_backend(SAVE_COMMON_NAME, SaveHolder.common)
-	
-	# Tell the signal that the save is finished
-	save_common_complete.emit()
+	if write_backend(SAVE_COMMON_NAME, SaveHolder.common):
+		# Tell the signal that the save is finished successfully
+		save_common_complete.emit()
+	else:
+		save_error.emit()
 
 func read_common() -> void:
 	# Get dictionary from file in save directory
 	var dict: Dictionary = read_backend_by_name(SAVE_COMMON_NAME)
 	if dict.is_empty():
+		load_error.emit()
 		return
 	
 	# Create a new common save and write each key from the JSON into it
@@ -98,7 +106,7 @@ func read_common() -> void:
 
 # Backend functions handling reading and writing of data
 
-func write_backend(name: String, object) -> void:
+func write_backend(name: String, object) -> bool:
 	# Ensure the directory 100% exists to avoid issues
 	DirAccess.make_dir_absolute(SAVE_DIR)
 	
@@ -108,7 +116,7 @@ func write_backend(name: String, object) -> void:
 	var file = FileAccess.open_encrypted_with_pass(file_path, FileAccess.WRITE, KEY)
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
-		return
+		return false
 	
 	# Create a dictionary out of the object using the parser
 	var data: Dictionary = object_to_dict(object)
@@ -117,8 +125,10 @@ func write_backend(name: String, object) -> void:
 	var json_string = JSON.stringify(data, "\t")
 	file.store_string(json_string)
 	file.close()
+	
+	return true
 
-func write_backend_with_json_string(path: String, json_string: String) -> void:
+func write_backend_with_json_string(path: String, json_string: String) -> bool:
 	# Ensure the directory 100% exists to avoid issues
 	DirAccess.make_dir_absolute(SAVE_DIR)
 	
@@ -126,11 +136,13 @@ func write_backend_with_json_string(path: String, json_string: String) -> void:
 	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.WRITE, KEY)
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
-		return
+		return false
 	
 	# Write this data to disk
 	file.store_string(json_string)
 	file.close()
+	
+	return true
 
 func read_backend_by_name(name: String) -> Dictionary:
 	return read_backend(SAVE_DIR + name + SAVE_EXTENSION_NAME)
