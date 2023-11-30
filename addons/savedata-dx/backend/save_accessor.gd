@@ -93,10 +93,7 @@ func read_slot(index: int) -> void:
 	
 	# Create a new current save and write each key from the JSON into it
 	SaveHolder.reset_slot()
-	for key in range(dict.size()):
-		var key_name: String = dict.keys()[key]
-		var value = dict.values()[key]
-		SaveHolder.slot.set(key_name, value)
+	_dict_to_object(dict, [SaveHolder.slot])
 	
 	# Tell the signal that the load is finished
 	load_slot_complete.emit()
@@ -127,10 +124,7 @@ func read_common() -> void:
 	
 	# Create a new common save and write each key from the JSON into it
 	SaveHolder.reset_common()
-	for key in range(dict.size()):
-		var key_name: String = dict.keys()[key]
-		var value = dict.values()[key]
-		SaveHolder.common.set(key_name, value)
+	_dict_to_object(dict, [SaveHolder.common])
 	
 	# Tell the signal that the load is finished
 	load_common_complete.emit()
@@ -288,3 +282,95 @@ func _expand_array_for_dict(list: Array) -> Array:
 				new_list.push_back(item)
 	
 	return new_list
+
+## Not intended for the end user.  
+## Writes dictionary data into object, including dedicated array handling
+func _dict_to_object(dict: Dictionary, obj_ref: Array) -> void:
+	# Iterate through every key in dictionary
+	for key in range(dict.size()):
+		# Get the variable from the object reference so you can compare type
+		var member: Array = [obj_ref[0].get(dict.keys()[key])]
+		
+		# Perform different behavior depending on the type of this member
+		match(typeof(member[0])):
+			TYPE_OBJECT: # Call self again with sub-object
+				_dict_to_object(dict.values()[key], member)
+			TYPE_ARRAY:
+				_handle_array_in_dict_for_object(dict.values()[key], member[0], dict.keys()[key])
+			_: # Default behavior
+				obj_ref[0].set(dict.keys()[key], dict.values()[key])
+
+## Not intended for the end user. 
+## Handle converting a dictionary array into a typed array, part of the dict_to_obj method
+func _handle_array_in_dict_for_object(dict_ar: Array, obj_ar: Array, ar_name: String) -> void:
+	# Get the type of the array
+	var type: int = obj_ar.get_typed_builtin()
+	var obj_type: Object = obj_ar.get_typed_script()
+	
+	# Reset array to empty to avoid duplication if the array has default values
+	if not obj_ar.is_empty():
+		# If the array holds objects, manually free them before emptying array
+		if type == TYPE_OBJECT:
+			for item in obj_ar: 
+				if item.has_method("free"):
+					item.free()
+				else:
+					push_warning("Object in SaveData array \"%s\" doesn't have free method.
+					Memory leak!" % [ar_name])
+		
+		obj_ar.clear()
+	
+	# Handle proceeding from here differently depending on type
+	match(type):
+		TYPE_OBJECT: # Handle an object inside an array
+			# Iterate through every index in the dictionary array
+			for item in dict_ar:
+				# Create new object of array's type, then build it with dict_to_obj
+				obj_ar.push_back(obj_type.new())
+				_dict_to_object(item, [obj_ar.back()])
+		TYPE_BOOL, TYPE_FLOAT, TYPE_STRING, TYPE_DICTIONARY:
+			for item in dict_ar:
+				obj_ar.push_back(item)
+		TYPE_INT:
+			for item in dict_ar:
+				obj_ar.push_back(int(item))
+		_: # Error if the array has a bad type
+			push_error("SaveData script arrays must be typed with one of the following types:
+			Object, bool, int, float, string, or dictionary.
+			Name of array that spawned error: %s
+			
+			All scripts that extend from object are valid here,
+			this includes scripts created with the SaveData menu.
+			To use other types, put those types inside an object and use that object."
+			% [ar_name])
+			return
+
+## Not intended for the end user.
+## Called by SaveHolder to prevent memory leaks when destroying save data
+func _free_object_and_subobjects(obj_ref: Array[Object]) -> void:
+	# Get all properties from object
+	var members = obj_ref[0].get_property_list()
+	var member_index: int = 0
+	
+	# Iterate through all members
+	for member in members:
+		member_index += 1
+		if member_index <= 2:
+			continue
+		
+		# Get value of current member
+		var value = obj_ref[0].get(member.name)
+		
+		match(typeof(obj_ref[0].get(member.name))):
+			TYPE_OBJECT: # Free this object
+				obj_ref[0].get(member.name).free()
+			TYPE_ARRAY: # Check if this is an array and check if it holds objects
+				if not value.get_typed_builtin() == TYPE_OBJECT:
+					continue
+				
+				# If it holds objects, scan each of these for subobjects and then destroy it
+				for item in value:
+					_free_object_and_subobjects([item])
+	
+	# Once iterating is complete, destroy root object
+	obj_ref[0].free()
