@@ -35,12 +35,17 @@ layout_mode = 2
 
 [node name="SignalHeader" type="Label" parent="Panel/Margin/Notifications/VBox"]
 layout_mode = 2
-text = "Signal Events:"
+text = "Events and Status:"
 
 [node name="SignalNotif" type="Label" parent="Panel/Margin/Notifications/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "None yet"
+
+[node name="ThreadNotif" type="Label" parent="Panel/Margin/Notifications/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Thread Inactive"
 
 [node name="Header" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
@@ -86,6 +91,10 @@ scroll_active = false
 [node name="ProgressSlider" type="HSlider" parent="Panel/Margin/Header"]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/Margin/Header"]
+layout_mode = 2
+theme_override_constants/separation = 25
 
 [connection signal="value_changed" from="Panel/Margin/Header/SaveLoad/SpinBox" to="." method="_on_spin_box_value_changed"]
 [connection signal="pressed" from="Panel/Margin/Header/SaveLoad/ButtonSave" to="." method="_on_button_save_pressed"]

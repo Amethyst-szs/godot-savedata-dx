@@ -5,14 +5,14 @@ func _ready():
 	SaveAccessor.load_slot_complete.connect(_on_slot_loaded)
 	SaveAccessor.save_error.connect(_on_save_error)
 	SaveAccessor.load_error.connect(_on_load_error)
+	SaveAccessor.thread_busy.connect(_on_thread_busy)
+	SaveAccessor.thread_complete.connect(_on_thread_complete)
 
 func _process(_delta):
 	%ProgressSlider.value = SaveHolder.slot.progress
-	pass
 
 func _on_h_slider_changed(value: float):
 	SaveHolder.slot.progress = value
-	pass
 
 func _on_spin_box_value_changed(value: int):
 	SaveAccessor.set_active_slot(value)
@@ -34,3 +34,9 @@ func _on_save_error():
 	
 func _on_load_error():
 	%SignalNotif.text = "Signal: Load Errored"
+
+func _on_thread_busy():
+	%ThreadNotif.text = "Thread Busy!"
+	
+func _on_thread_complete():
+	%ThreadNotif.text = "Thread Inactive"

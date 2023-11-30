@@ -23,6 +23,11 @@ const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
 
 # Signal messages
 
+## Emitted when the thread becomes busy due to a request
+signal thread_busy
+## Emitted when the current save/load is finished, regardless of success
+signal thread_complete
+
 ## Emitted when saving to a slot is completed successfully
 signal save_slot_complete
 ## Emitted when saving the common data is completed successfully
@@ -39,6 +44,81 @@ signal active_slot_changed
 signal save_error
 ## Emitted when a load call fails
 signal load_error
+
+# Thread system
+
+## What kind of action are you requesting the thread to perform
+enum ThreadRequestType {
+	UNKNOWN = -1,
+	WRITE_SLOT,
+	READ_SLOT,
+	WRITE_COMMON,
+	READ_COMMON
+}
+
+## Class containing information about what the thread should start doing
+class ThreadRequest:
+	var type: ThreadRequestType = ThreadRequestType.UNKNOWN
+	var slot_id: int = 0
+
+## The thread used for reading/writting save data
+var thread: Thread
+
+## Trigger used to start the thread's process
+var thread_semaphore: Semaphore
+
+## Information about what the thread should be doing
+var thread_request: ThreadRequest = ThreadRequest.new()
+
+## Is the thread currently busy
+var is_thread_busy: bool = false
+
+## Should the thread be terminated
+var is_thread_terminate: bool = false
+
+
+# Methods start below here
+
+func _ready():
+	# Setup thread and and its components
+	thread_semaphore = Semaphore.new()
+	is_thread_busy = false
+	is_thread_terminate = false
+	
+	thread = Thread.new()
+	thread.start(_thread_func, Thread.PRIORITY_NORMAL)
+
+func _thread_func():
+	while true:
+		thread_semaphore.wait()
+		if is_thread_terminate: break
+		
+		is_thread_busy = true
+		call_deferred("emit_signal", "thread_busy")
+		
+		match(thread_request.type):
+			ThreadRequestType.WRITE_SLOT:
+				_write_slot_thread_func(thread_request.slot_id)
+			ThreadRequestType.READ_SLOT:
+				_read_slot_thread_func(thread_request.slot_id)
+			ThreadRequestType.WRITE_COMMON:
+				_write_common_thread_func()
+			ThreadRequestType.READ_COMMON:
+				_read_common_thread_func()
+		
+		is_thread_busy = false
+		call_deferred("emit_signal", "thread_complete")
+		
+		if is_thread_terminate: break
+
+func _thread_busy_warning():
+	push_warning("Save/Load request ignored cause SaveAccessor thread is busy!
+	You can be notified when the thread is free with the \"thread_complete\" signal")
+
+func _exit_tree():
+	is_thread_terminate = true
+	thread_semaphore.post()
+	thread.wait_to_finish()
 
 # Check/modify a save slot determined by the variable "active_save_slot"
 
@@ -77,18 +157,40 @@ func is_slot_exist(index: int) -> bool:
 
 ## Writes to a specific save slot index, and emits "save_slot_complete" when successful
 func write_slot(index: int) -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.WRITE_SLOT
+	thread_request.slot_id = index
+	thread_semaphore.post()
+
+## Not intended for the end user.  
+## Functionality for save slot writing, handled on a seperate thread
+func _write_slot_thread_func(index: int) -> void:
 	if _write_backend("s%s" % [str(index)], SaveHolder.slot):
 		# Tell the signal that the save is finished successfully
-		save_slot_complete.emit()
+		call_deferred("emit_signal", "save_slot_complete")
 	else:
-		save_error.emit()
+		call_deferred("emit_signal", "save_error")
 
 ## Loads data a specific save slot index, and emits "load_slot_complete" when successful
 func read_slot(index: int) -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.READ_SLOT
+	thread_request.slot_id = index
+	thread_semaphore.post()
+
+## Not intended for the end user.  
+## Functionality for save slot reading, handled on a seperate thread
+func _read_slot_thread_func(index: int) -> void:
 	# Get dictionary from file in save directory
 	var dict: Dictionary = _read_backend_by_name("s%s" % [str(index)])
 	if dict.is_empty():
-		load_error.emit()
+		call_deferred("emit_signal", "load_error")
 		return
 	
 	# Create a new current save and write each key from the JSON into it
@@ -96,7 +198,7 @@ func read_slot(index: int) -> void:
 	_dict_to_object(dict, [SaveHolder.slot])
 	
 	# Tell the signal that the load is finished
-	load_slot_complete.emit()
+	call_deferred("emit_signal", "load_slot_complete")
 
 
 # Check/modify the common save data shared between all slots
@@ -108,18 +210,38 @@ func is_common_exist() -> bool:
 
 ## Writes the common data to disk, and emits "save_common_complete" when successful
 func write_common() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.WRITE_COMMON
+	thread_semaphore.post()
+
+## Not intended for the end user.  
+## Functionality for common writing, handled on a seperate thread
+func _write_common_thread_func() -> void:
 	if _write_backend(SAVE_COMMON_NAME, SaveHolder.common):
 		# Tell the signal that the save is finished successfully
-		save_common_complete.emit()
+		call_deferred("emit_signal", "save_common_complete")
 	else:
-		save_error.emit()
+		call_deferred("emit_signal", "save_error")
 
 ## Reads the common data from the disk, and emits "load_common_complete" when successful
 func read_common() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.READ_COMMON
+	thread_semaphore.post()
+
+## Not intended for the end user.  
+## Functionality for common reading, handled on a seperate thread
+func _read_common_thread_func() -> void:
 	# Get dictionary from file in save directory
 	var dict: Dictionary = _read_backend_by_name(SAVE_COMMON_NAME)
 	if dict.is_empty():
-		load_error.emit()
+		call_deferred("emit_signal", "load_error")
 		return
 	
 	# Create a new common save and write each key from the JSON into it
@@ -127,7 +249,7 @@ func read_common() -> void:
 	_dict_to_object(dict, [SaveHolder.common])
 	
 	# Tell the signal that the load is finished
-	load_common_complete.emit()
+	call_deferred("emit_signal", "load_slot_complete")
 
 # Backend functions handling reading and writing of data
 
