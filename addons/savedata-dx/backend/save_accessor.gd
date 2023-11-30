@@ -425,6 +425,10 @@ func _dict_to_object(dict: Dictionary, obj_ref: Array) -> void:
 		
 		# Perform different behavior depending on the type of this member
 		match(typeof(member[0])):
+			TYPE_NIL: # Make sure this property exists on the object
+				push_warning("Loading SaveData: Property \"%s\" does not exist on object"
+				% [dict.keys()[key]])
+				continue
 			TYPE_OBJECT: # Call self again with sub-object
 				_dict_to_object(dict.values()[key], member)
 			TYPE_ARRAY:
