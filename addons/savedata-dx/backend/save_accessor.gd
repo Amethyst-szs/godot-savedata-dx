@@ -6,11 +6,15 @@ extends Node
 ## access it via "SaveAccessor" in your scritps.
 class_name SaveAccessorPlugin
 
+#region Imports
+
 # Include datatype parser for converting Object into JSON
 const datatype_dict_parser = preload("res://addons/savedata-dx/backend/datatype_parser.gd")
 var dict_parse = datatype_dict_parser.new()
 
-# Constants defining where the saves are located and how they are named/stored
+#endregion
+
+#region Constants
 
 ## Directory to store save files
 const SAVE_DIR: String = "user://sv/"
@@ -21,7 +25,9 @@ const SAVE_EXTENSION_NAME: String = ".bin"
 ## Encryption key, can be changed but will break all existing saves if changed
 const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
 
-# Signal messages
+#endregion
+
+#region Signals
 
 ## Emitted when the thread becomes busy due to a request
 signal thread_busy
@@ -45,82 +51,9 @@ signal save_error
 ## Emitted when a load call fails
 signal load_error
 
-# Thread system
+#endregion
 
-## What kind of action are you requesting the thread to perform
-enum ThreadRequestType {
-	UNKNOWN = -1,
-	WRITE_SLOT,
-	READ_SLOT,
-	WRITE_COMMON,
-	READ_COMMON
-}
-
-## Class containing information about what the thread should start doing
-class ThreadRequest:
-	var type: ThreadRequestType = ThreadRequestType.UNKNOWN
-	var slot_id: int = 0
-
-## The thread used for reading/writting save data
-var thread: Thread
-
-## Trigger used to start the thread's process
-var thread_semaphore: Semaphore
-
-## Information about what the thread should be doing
-var thread_request: ThreadRequest = ThreadRequest.new()
-
-## Is the thread currently busy
-var is_thread_busy: bool = false
-
-## Should the thread be terminated
-var is_thread_terminate: bool = false
-
-
-# Methods start below here
-
-func _ready():
-	# Setup thread and and its components
-	thread_semaphore = Semaphore.new()
-	is_thread_busy = false
-	is_thread_terminate = false
-	
-	thread = Thread.new()
-	thread.start(_thread_func, Thread.PRIORITY_NORMAL)
-
-func _thread_func():
-	while true:
-		thread_semaphore.wait()
-		if is_thread_terminate: break
-		
-		is_thread_busy = true
-		call_deferred("emit_signal", "thread_busy")
-		
-		match(thread_request.type):
-			ThreadRequestType.WRITE_SLOT:
-				_write_slot_thread_func(thread_request.slot_id)
-			ThreadRequestType.READ_SLOT:
-				_read_slot_thread_func(thread_request.slot_id)
-			ThreadRequestType.WRITE_COMMON:
-				_write_common_thread_func()
-			ThreadRequestType.READ_COMMON:
-				_read_common_thread_func()
-		
-		is_thread_busy = false
-		call_deferred("emit_signal", "thread_complete")
-		
-		if is_thread_terminate: break
-
-func _thread_busy_warning():
-	push_warning("Save/Load request ignored cause SaveAccessor thread is busy!
-	You can be notified when the thread is free with the \"thread_complete\" signal")
-
-func _exit_tree():
-	is_thread_terminate = true
-	thread_semaphore.post()
-	thread.wait_to_finish()
-
-# Check/modify a save slot determined by the variable "active_save_slot"
+#region End-user Functions
 
 ## Current save slot, useful to manage which file is getting read/written to
 var active_save_slot: int = 1:
@@ -148,8 +81,6 @@ func write_active_slot() -> void:
 func read_active_slot() -> void:
 	read_slot(active_save_slot)
 
-# Check/modify a specific save slot, specified by index
-
 ## Checks if a file exists for a specific save slot index, does not ensure it is valid
 func is_slot_exist(index: int) -> bool:
 	var path = SAVE_DIR + "s" + str(index) + SAVE_EXTENSION_NAME
@@ -165,15 +96,6 @@ func write_slot(index: int) -> void:
 	thread_request.slot_id = index
 	thread_semaphore.post()
 
-## Not intended for the end user.  
-## Functionality for save slot writing, handled on a seperate thread
-func _write_slot_thread_func(index: int) -> void:
-	if _write_backend("s%s" % [str(index)], SaveHolder.slot):
-		# Tell the signal that the save is finished successfully
-		call_deferred("emit_signal", "save_slot_complete")
-	else:
-		call_deferred("emit_signal", "save_error")
-
 ## Loads data a specific save slot index, and emits "load_slot_complete" when successful
 func read_slot(index: int) -> void:
 	if is_thread_busy:
@@ -183,6 +105,42 @@ func read_slot(index: int) -> void:
 	thread_request.type = ThreadRequestType.READ_SLOT
 	thread_request.slot_id = index
 	thread_semaphore.post()
+
+## Checks if the common save exists in save directory
+func is_common_exist() -> bool:
+	var path = SAVE_DIR + SAVE_COMMON_NAME + SAVE_EXTENSION_NAME
+	return FileAccess.file_exists(path)
+
+## Writes the common data to disk, and emits "save_common_complete" when successful
+func write_common() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.WRITE_COMMON
+	thread_semaphore.post()
+
+## Reads the common data from the disk, and emits "load_common_complete" when successful
+func read_common() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.READ_COMMON
+	thread_semaphore.post()
+
+#endregion
+
+#region Backend functions called by thread
+
+## Not intended for the end user.  
+## Functionality for save slot writing, handled on a seperate thread
+func _write_slot_thread_func(index: int) -> void:
+	if _write_backend("s%s" % [str(index)], SaveHolder.slot):
+		# Tell the signal that the save is finished successfully
+		call_deferred("emit_signal", "save_slot_complete")
+	else:
+		call_deferred("emit_signal", "save_error")
 
 ## Not intended for the end user.  
 ## Functionality for save slot reading, handled on a seperate thread
@@ -200,23 +158,6 @@ func _read_slot_thread_func(index: int) -> void:
 	# Tell the signal that the load is finished
 	call_deferred("emit_signal", "load_slot_complete")
 
-
-# Check/modify the common save data shared between all slots
-
-## Checks if the common save exists in save directory
-func is_common_exist() -> bool:
-	var path = SAVE_DIR + SAVE_COMMON_NAME + SAVE_EXTENSION_NAME
-	return FileAccess.file_exists(path)
-
-## Writes the common data to disk, and emits "save_common_complete" when successful
-func write_common() -> void:
-	if is_thread_busy:
-		_thread_busy_warning()
-		return
-		
-	thread_request.type = ThreadRequestType.WRITE_COMMON
-	thread_semaphore.post()
-
 ## Not intended for the end user.  
 ## Functionality for common writing, handled on a seperate thread
 func _write_common_thread_func() -> void:
@@ -225,15 +166,6 @@ func _write_common_thread_func() -> void:
 		call_deferred("emit_signal", "save_common_complete")
 	else:
 		call_deferred("emit_signal", "save_error")
-
-## Reads the common data from the disk, and emits "load_common_complete" when successful
-func read_common() -> void:
-	if is_thread_busy:
-		_thread_busy_warning()
-		return
-		
-	thread_request.type = ThreadRequestType.READ_COMMON
-	thread_semaphore.post()
 
 ## Not intended for the end user.  
 ## Functionality for common reading, handled on a seperate thread
@@ -345,6 +277,84 @@ func _read_backend_raw_data(path: String) -> String:
 	
 	# Return the JSON data to then be converted into a object later
 	return content
+
+#endregion
+
+#region Multithreading System
+
+## What kind of action are you requesting the thread to perform
+enum ThreadRequestType {
+	UNKNOWN = -1,
+	WRITE_SLOT,
+	READ_SLOT,
+	WRITE_COMMON,
+	READ_COMMON
+}
+
+## Class containing information about what the thread should start doing
+class ThreadRequest:
+	var type: ThreadRequestType = ThreadRequestType.UNKNOWN
+	var slot_id: int = 0
+
+## The thread used for reading/writting save data
+var thread: Thread
+
+## Trigger used to start the thread's process
+var thread_semaphore: Semaphore
+
+## Information about what the thread should be doing
+var thread_request: ThreadRequest = ThreadRequest.new()
+
+## Is the thread currently busy
+var is_thread_busy: bool = false
+
+## Should the thread be terminated
+var is_thread_terminate: bool = false
+
+func _ready():
+	# Setup thread and and its components
+	thread_semaphore = Semaphore.new()
+	is_thread_busy = false
+	is_thread_terminate = false
+	
+	thread = Thread.new()
+	thread.start(_thread_func, Thread.PRIORITY_NORMAL)
+
+func _thread_func():
+	while true:
+		thread_semaphore.wait()
+		if is_thread_terminate: break
+		
+		is_thread_busy = true
+		call_deferred("emit_signal", "thread_busy")
+		
+		match(thread_request.type):
+			ThreadRequestType.WRITE_SLOT:
+				_write_slot_thread_func(thread_request.slot_id)
+			ThreadRequestType.READ_SLOT:
+				_read_slot_thread_func(thread_request.slot_id)
+			ThreadRequestType.WRITE_COMMON:
+				_write_common_thread_func()
+			ThreadRequestType.READ_COMMON:
+				_read_common_thread_func()
+		
+		is_thread_busy = false
+		call_deferred("emit_signal", "thread_complete")
+		
+		if is_thread_terminate: break
+
+func _thread_busy_warning():
+	push_warning("Save/Load request ignored cause SaveAccessor thread is busy!
+	You can be notified when the thread is free with the \"thread_complete\" signal")
+
+func _exit_tree():
+	is_thread_terminate = true
+	thread_semaphore.post()
+	thread.wait_to_finish()
+
+#endregion
+
+#region Backend Save Parsing Utilities
 
 ## Not intended for the end user.  
 ## Converts object class into dictionary for saving process
@@ -496,3 +506,5 @@ func _free_object_and_subobjects(obj_ref: Array[Object]) -> void:
 	
 	# Once iterating is complete, destroy root object
 	obj_ref[0].free()
+
+#endregion
