@@ -1,2 +1,2 @@
-extends Object
+extends RefCounted
 var progress = 50

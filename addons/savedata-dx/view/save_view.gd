@@ -300,7 +300,7 @@ func code_editor_save_script() -> void:
 		return
 	
 	# Write data to disk
-	file.store_string("extends Object\n" + code_editor.text)
+	file.store_string("extends RefCounted\n" + code_editor.text)
 	file.close()
 
 func apply_theme() -> void:

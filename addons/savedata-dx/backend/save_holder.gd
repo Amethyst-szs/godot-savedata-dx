@@ -29,12 +29,10 @@ func _ready():
 
 ## Resets the data in the slot variable to default
 func reset_slot():
-	SaveAccessor._free_object_and_subobjects([slot])
 	slot = slot_script.new()
 
 ## Resets the data in the common variable to default
 func reset_common():
-	SaveAccessor._free_object_and_subobjects([common])
 	common = common_script.new()
 
 ## Resets the data in the slot and common variable to default. 

@@ -367,7 +367,7 @@ func _object_to_dict(obj: Object) -> Dictionary:
 	# Iterate through all members
 	for member in members:
 		member_index += 1
-		if member_index <= 2:
+		if member_index <= 3:
 			continue
 		
 		# Write the member to dictionary depending on type of member
@@ -445,15 +445,6 @@ func _handle_array_in_dict_for_object(dict_ar: Array, obj_ar: Array, ar_name: St
 	
 	# Reset array to empty to avoid duplication if the array has default values
 	if not obj_ar.is_empty():
-		# If the array holds objects, manually free them before emptying array
-		if type == TYPE_OBJECT:
-			for item in obj_ar: 
-				if item.has_method("free"):
-					item.free()
-				else:
-					push_warning("Object in SaveData array \"%s\" doesn't have free method.
-					Memory leak!" % [ar_name])
-		
 		obj_ar.clear()
 	
 	# Handle proceeding from here differently depending on type
@@ -480,35 +471,5 @@ func _handle_array_in_dict_for_object(dict_ar: Array, obj_ar: Array, ar_name: St
 			To use other types, put those types inside an object and use that object."
 			% [ar_name])
 			return
-
-## Not intended for the end user.
-## Called by SaveHolder to prevent memory leaks when destroying save data
-func _free_object_and_subobjects(obj_ref: Array[Object]) -> void:
-	# Get all properties from object
-	var members = obj_ref[0].get_property_list()
-	var member_index: int = 0
-	
-	# Iterate through all members
-	for member in members:
-		member_index += 1
-		if member_index <= 2:
-			continue
-		
-		# Get value of current member
-		var value = obj_ref[0].get(member.name)
-		
-		match(typeof(obj_ref[0].get(member.name))):
-			TYPE_OBJECT: # Free this object
-				obj_ref[0].get(member.name).free()
-			TYPE_ARRAY: # Check if this is an array and check if it holds objects
-				if not value.get_typed_builtin() == TYPE_OBJECT:
-					continue
-				
-				# If it holds objects, scan each of these for subobjects and then destroy it
-				for item in value:
-					_free_object_and_subobjects([item])
-	
-	# Once iterating is complete, destroy root object
-	obj_ref[0].free()
 
 #endregion

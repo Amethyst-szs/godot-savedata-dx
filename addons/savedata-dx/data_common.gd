@@ -1,1 +1,1 @@
-extends Object
+extends RefCounted
