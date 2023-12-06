@@ -6,20 +6,20 @@ symbol_color = Color(0.67, 0.79, 1, 1)
 function_color = Color(0.34, 0.7, 1, 1)
 member_variable_color = Color(0.736, 0.88, 1, 1)
 keyword_colors = {
-"Array": Color(0.258824, 1, 0.760784, 1),
-"Color": Color(0.258824, 1, 0.760784, 1),
-"Quaternion": Color(0.258824, 1, 0.760784, 1),
-"String": Color(0.258824, 1, 0.760784, 1),
-"Vector2": Color(0.258824, 1, 0.760784, 1),
-"Vector2i": Color(0.258824, 1, 0.760784, 1),
-"Vector3": Color(0.258824, 1, 0.760784, 1),
-"Vector3i": Color(0.258824, 1, 0.760784, 1),
-"Vector4": Color(0.258824, 1, 0.760784, 1),
-"Vector4i": Color(0.258824, 1, 0.760784, 1),
-"bool": Color(0.258824, 1, 0.760784, 1),
+"Array": Color(0.26, 1, 0.76, 1),
+"Color": Color(0.26, 1, 0.76, 1),
+"Quaternion": Color(0.26, 1, 0.76, 1),
+"String": Color(0.26, 1, 0.76, 1),
+"Vector2": Color(0.26, 1, 0.76, 1),
+"Vector2i": Color(0.26, 1, 0.76, 1),
+"Vector3": Color(0.26, 1, 0.76, 1),
+"Vector3i": Color(0.26, 1, 0.76, 1),
+"Vector4": Color(0.26, 1, 0.76, 1),
+"Vector4i": Color(0.26, 1, 0.76, 1),
+"bool": Color(0.26, 1, 0.76, 1),
 "const": Color(1, 0.44, 0.52, 1),
-"float": Color(0.258824, 1, 0.760784, 1),
-"int": Color(0.258824, 1, 0.760784, 1),
+"float": Color(0.26, 1, 0.76, 1),
+"int": Color(0.26, 1, 0.76, 1),
 "var": Color(1, 0.44, 0.52, 1)
 }
 color_regions = {
