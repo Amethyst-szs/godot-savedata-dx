@@ -5,6 +5,11 @@ const SaveView = preload("./view/save_view.tscn")
 var save_view
 
 func _enter_tree():
+	# Ensure various folders
+	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
+	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/slot/")
+	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/common/")
+	
 	# Setup singletons for accessing and holding save data
 	add_autoload_singleton("SaveAccessor", "res://addons/savedata-dx/backend/save_accessor.gd")
 	add_autoload_singleton("SaveHolder", "res://addons/savedata-dx/backend/save_holder.gd")

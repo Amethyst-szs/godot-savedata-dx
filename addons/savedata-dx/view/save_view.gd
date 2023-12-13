@@ -66,7 +66,12 @@ var editor_plugin: EditorPlugin
 func _ready() -> void:
 	if not is_instance_valid(editor_plugin):
 		return
-		
+	
+	# Ensure various folders
+	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
+	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/slot/")
+	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/common/")
+	
 	apply_theme()
 	_on_edit_mode_selected(EditModeType.INSPECTOR)
 
