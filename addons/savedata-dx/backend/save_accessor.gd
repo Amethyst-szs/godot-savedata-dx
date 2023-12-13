@@ -355,7 +355,14 @@ var thread_semaphore: Semaphore
 var thread_request: ThreadRequest = ThreadRequest.new()
 
 ## Is the thread currently busy
-var is_thread_busy: bool = false
+var is_thread_busy: bool = false:
+	set(value):
+		is_thread_busy = value
+		
+		if value:
+			call_deferred("emit_signal", "thread_busy")
+		else:
+			call_deferred("emit_signal", "thread_complete")
 
 ## Should the thread be terminated
 var is_thread_terminate: bool = false
@@ -363,8 +370,6 @@ var is_thread_terminate: bool = false
 func _ready():
 	# Setup thread and and its components
 	thread_semaphore = Semaphore.new()
-	is_thread_busy = false
-	is_thread_terminate = false
 	
 	thread = Thread.new()
 	thread.start(_thread_func, Thread.PRIORITY_NORMAL)
@@ -375,20 +380,18 @@ func _thread_func():
 		if is_thread_terminate: break
 		
 		is_thread_busy = true
-		call_deferred("emit_signal", "thread_busy")
 		
 		match(thread_request.type):
 			ThreadRequestType.WRITE_SLOT:
-				_write_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				await _write_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
 			ThreadRequestType.READ_SLOT:
-				_read_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				await _read_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
 			ThreadRequestType.WRITE_COMMON:
-				_write_common_thread_func()
+				await _write_common_thread_func()
 			ThreadRequestType.READ_COMMON:
-				_read_common_thread_func()
+				await _read_common_thread_func()
 		
 		is_thread_busy = false
-		call_deferred("emit_signal", "thread_complete")
 		
 		if is_thread_terminate: break
 
