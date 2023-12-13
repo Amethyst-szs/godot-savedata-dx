@@ -2,7 +2,7 @@ extends Node
 
 ## SaveDataDX plugin by Amethyst-szs - 
 ## Used to manage reading/writing save data.
-## This class is meant to be used an autoload singleton,
+## This class is meant to be used as an autoload singleton,
 ## access it via "SaveAccessor" in your scritps.
 class_name SaveAccessorPlugin
 
@@ -20,6 +20,8 @@ var dict_parse = datatype_dict_parser.new()
 const SAVE_DIR: String = "user://sv/"
 ## Name of the common file
 const SAVE_COMMON_NAME: String = "common"
+## Name of the automatic save file
+const SAVE_AUTO_NAME: String = "auto"
 ## File extension used by save files
 const SAVE_EXTENSION_NAME: String = ".bin"
 ## Encryption key, can be changed but will break all existing saves if changed
@@ -56,8 +58,13 @@ signal load_error
 #region End-user Functions
 
 ## Current save slot, useful to manage which file is getting read/written to
-var active_save_slot: int = 1:
+var active_save_slot: int = 0:
 	set (value):
+		# Clamp value to be zero or higher
+		if value < 0:
+			push_warning("Cannot have an active save slot below zero! Defaulting to zero")
+			value = max(0, value)
+		
 		if not active_save_slot == value:
 			active_slot_changed.emit()
 		
@@ -81,6 +88,31 @@ func write_active_slot() -> void:
 func read_active_slot() -> void:
 	read_slot(active_save_slot)
 
+## Checks if a file exists for autosave slot, does not ensure it is valid
+func is_autosave_exist() -> bool:
+	var path = SAVE_DIR + "s" + SAVE_AUTO_NAME + SAVE_EXTENSION_NAME
+	return FileAccess.file_exists(path)
+
+## Writes to the autosave slot, and emits "save_slot_complete" when successful
+func write_autosave_slot() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.WRITE_SLOT
+	thread_request.is_slot_auto = true
+	thread_semaphore.post()
+
+## Loads data from the autosave slot, and emits "load_slot_complete" when successful
+func read_autosave_slot() -> void:
+	if is_thread_busy:
+		_thread_busy_warning()
+		return
+		
+	thread_request.type = ThreadRequestType.READ_SLOT
+	thread_request.is_slot_auto = true
+	thread_semaphore.post()
+
 ## Checks if a file exists for a specific save slot index, does not ensure it is valid
 func is_slot_exist(index: int) -> bool:
 	var path = SAVE_DIR + "s" + str(index) + SAVE_EXTENSION_NAME
@@ -94,6 +126,7 @@ func write_slot(index: int) -> void:
 		
 	thread_request.type = ThreadRequestType.WRITE_SLOT
 	thread_request.slot_id = index
+	thread_request.is_slot_auto = false
 	thread_semaphore.post()
 
 ## Loads data a specific save slot index, and emits "load_slot_complete" when successful
@@ -104,6 +137,7 @@ func read_slot(index: int) -> void:
 		
 	thread_request.type = ThreadRequestType.READ_SLOT
 	thread_request.slot_id = index
+	thread_request.is_slot_auto = false
 	thread_semaphore.post()
 
 ## Checks if the common save exists in save directory
@@ -135,8 +169,15 @@ func read_common() -> void:
 
 ## Not intended for the end user.  
 ## Functionality for save slot writing, handled on a seperate thread
-func _write_slot_thread_func(index: int) -> void:
-	if _write_backend("s%s" % [str(index)], SaveHolder.slot):
+func _write_slot_thread_func(index: int, is_auto_slot: bool) -> void:
+	# Get file name to write from
+	var file_name: String = ""
+	if is_auto_slot:
+		file_name = "s%s" % [SAVE_AUTO_NAME]
+	else:
+		file_name = "s%s" % [str(index)]
+	
+	if _write_backend(file_name, SaveHolder.slot):
 		# Tell the signal that the save is finished successfully
 		call_deferred("emit_signal", "save_slot_complete")
 	else:
@@ -144,9 +185,16 @@ func _write_slot_thread_func(index: int) -> void:
 
 ## Not intended for the end user.  
 ## Functionality for save slot reading, handled on a seperate thread
-func _read_slot_thread_func(index: int) -> void:
-	# Get dictionary from file in save directory
-	var dict: Dictionary = _read_backend_by_name("s%s" % [str(index)])
+func _read_slot_thread_func(index: int, is_auto_slot: bool) -> void:
+	# Get file name to read from
+	var file_name: String = ""
+	if is_auto_slot:
+		file_name = "s%s" % [SAVE_AUTO_NAME]
+	else:
+		file_name = "s%s" % [str(index)]
+	
+	# Get dictionary from file
+	var dict: Dictionary = _read_backend_by_name(file_name)
 	if dict.is_empty():
 		call_deferred("emit_signal", "load_error")
 		return
@@ -248,7 +296,7 @@ func _read_backend(path: String) -> Dictionary:
 	
 	# Print message saying that the dictionary is empty if needed
 	if data.is_empty():
-		printerr("File at %s was parsed correctly, but contains no data" % [path])
+		push_warning("File at %s was parsed correctly, but contains no data" % [path])
 	
 	# Return the JSON data to then be converted into a object later
 	return data
@@ -273,7 +321,7 @@ func _read_backend_raw_data(path: String) -> String:
 	
 	# Print message saying that the dictionary is empty if needed
 	if content.is_empty():
-		printerr("File at %s was parsed correctly, but contains no data" % [path])
+		push_warning("File at %s was parsed correctly, but contains no data" % [path])
 	
 	# Return the JSON data to then be converted into a object later
 	return content
@@ -295,6 +343,7 @@ enum ThreadRequestType {
 class ThreadRequest:
 	var type: ThreadRequestType = ThreadRequestType.UNKNOWN
 	var slot_id: int = 0
+	var is_slot_auto: bool = false
 
 ## The thread used for reading/writting save data
 var thread: Thread
@@ -330,9 +379,9 @@ func _thread_func():
 		
 		match(thread_request.type):
 			ThreadRequestType.WRITE_SLOT:
-				_write_slot_thread_func(thread_request.slot_id)
+				_write_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
 			ThreadRequestType.READ_SLOT:
-				_read_slot_thread_func(thread_request.slot_id)
+				_read_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
 			ThreadRequestType.WRITE_COMMON:
 				_write_common_thread_func()
 			ThreadRequestType.READ_COMMON:

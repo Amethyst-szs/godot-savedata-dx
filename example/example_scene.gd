@@ -23,6 +23,12 @@ func _on_button_save_pressed():
 func _on_button_load_pressed():
 	SaveAccessor.read_active_slot()
 
+func _on_autosave_button_save_pressed():
+	SaveAccessor.write_autosave_slot()
+
+func _on_autosave_button_load_pressed():
+	SaveAccessor.read_autosave_slot()
+
 func _on_slot_saved():
 	%SignalNotif.text = "Signal: Save Completed"
 	
