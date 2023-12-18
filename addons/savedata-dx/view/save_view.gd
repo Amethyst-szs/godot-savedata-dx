@@ -17,6 +17,8 @@ const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 # Header buttons
 @onready var head_button_load := %HeadLoad
 @onready var head_button_save := %HeadSave
+@onready var head_button_edit_slot := %HeadEditSlot
+@onready var head_button_edit_common := %HeadEditCommon
 @onready var head_button_info := %HeadInfo
 @onready var head_button_close := %HeadClose
 @onready var head_file_name := %OpenFileTextLabel
@@ -70,7 +72,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if not visible: return
-
+	
 	if event is InputEventKey and event.is_pressed():
 		match event.as_text():
 			"Ctrl+S", "Command+S":
@@ -79,13 +81,9 @@ func _input(event: InputEvent) -> void:
 			"Ctrl+O", "Command+O":
 				get_viewport().set_input_as_handled()
 				_on_head_load_pressed()
-			"Ctrl+N", "Command+N":
-				get_viewport().set_input_as_handled()
 			"Ctrl+W", "Command+W":
 				get_viewport().set_input_as_handled()
 				_on_head_close_pressed()
-			"Ctrl+I", "Command+I":
-				get_viewport().set_input_as_handled()
 
 #endregion
 
@@ -98,15 +96,24 @@ func _on_head_save_pressed():
 	if open_file_path.is_empty():
 		return
 	
-	unsaved_changes = false
-	
 	# If in inspector mode, verify user input and then write to disk
 	var test_parse = JSON.parse_string(code_editor.text)
 	if test_parse == null:
 		inspector_save_fail_dialog.popup()
 		return
 	
+	unsaved_changes = false
 	accessor_inst._write_backend_with_json_string(open_file_path, code_editor.text)
+
+func _on_head_edit_slot_pressed():
+	var script: Script = load("res://addons/savedata-dx/data_slot.gd")
+	EditorInterface.edit_script(script)
+	EditorInterface.set_main_screen_editor("Script")
+
+func _on_head_edit_common_pressed():
+	var script: Script = load("res://addons/savedata-dx/data_common.gd")
+	EditorInterface.edit_script(script)
+	EditorInterface.set_main_screen_editor("Script")
 
 func _on_head_info_pressed():
 	OS.shell_open("https://github.com/Amethyst-szs/godot-savedata-dx/wiki")
@@ -119,13 +126,9 @@ func _on_head_close_pressed():
 
 #region Decrypt Save Data
 
-# Convert file path to dictionary
-func decrypt_save(path: String) -> String:
-	return accessor_inst._read_backend_raw_data(path)
-
 # Called upon selecting a file in the debugger mode
 func _on_inspector_select_file(path: String) -> void:
-	var data: String = decrypt_save(path)
+	var data: String = accessor_inst._read_backend_raw_data(path)
 	if data.is_empty():
 		code_editor_close("Save data could not be opened, check output for more info")
 		return
@@ -142,8 +145,6 @@ func _on_inspector_select_file(path: String) -> void:
 
 #region Utility
 
-# Code editor management
-
 func _on_code_edit_text_changed():
 	unsaved_changes = true
 	$CompileTimer.start()
@@ -158,7 +159,6 @@ func _on_compile_timer_timeout():
 		head_button_save.disabled = true
 		code_error_footer.visible = true
 		code_error_text.text = "Error on Line %s: %s" % [str(json.get_error_line()), json.get_error_message()]
-		print()
 		return
 	
 	code_error_footer.visible = false
@@ -227,6 +227,8 @@ func apply_theme() -> void:
 		
 		head_button_load.icon = get_theme_icon("Load", "EditorIcons")
 		head_button_save.icon = get_theme_icon("Save", "EditorIcons")
+		head_button_edit_slot.icon = get_theme_icon("Edit", "EditorIcons")
+		head_button_edit_common.icon = get_theme_icon("EditInternal", "EditorIcons")
 		head_button_info.icon = get_theme_icon("Help", "EditorIcons")
 		head_button_close.icon = get_theme_icon("Back", "EditorIcons")
 		

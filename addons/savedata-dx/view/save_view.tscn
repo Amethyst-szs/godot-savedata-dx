@@ -65,6 +65,18 @@ tooltip_text = "Save data to disk
 (Ctrl+S)"
 text = " Save"
 
+[node name="HeadEditSlot" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Opens the slot save file in the Script Editor"
+text = "Edit Slot"
+
+[node name="HeadEditCommon" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Opens the common save in the Script Editor"
+text = "Edit Common"
+
 [node name="HeadInfo" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -143,6 +155,8 @@ dialog_autowrap = true
 [connection signal="timeout" from="CompileTimer" to="." method="_on_compile_timer_timeout"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadLoad" to="." method="_on_head_load_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSave" to="." method="_on_head_save_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditSlot" to="." method="_on_head_edit_slot_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditCommon" to="." method="_on_head_edit_common_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadInfo" to="." method="_on_head_info_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Bottom/HeadClose" to="." method="_on_head_close_pressed"]
 [connection signal="text_changed" from="Margin/VerticalSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
