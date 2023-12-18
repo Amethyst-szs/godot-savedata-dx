@@ -41,7 +41,7 @@ func _make_visible(visible):
 		save_view.visible = visible
 
 func _get_plugin_name():
-	return "SaveData"
+	return "Saves"
 
 func _get_plugin_icon():
 	return get_editor_interface().get_base_control().get_theme_icon("Save", "EditorIcons")
