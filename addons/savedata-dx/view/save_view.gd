@@ -64,10 +64,8 @@ func _ready() -> void:
 	# Disable save button
 	code_editor_close()
 	
-	# Ensure various folders
+	# Ensure the save directory in user folder
 	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
-	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/slot/")
-	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/common/")
 	
 	apply_theme()
 
