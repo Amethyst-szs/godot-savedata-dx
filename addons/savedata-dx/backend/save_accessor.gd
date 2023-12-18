@@ -23,7 +23,7 @@ const SAVE_COMMON_NAME: String = "common"
 ## Name of the automatic save file
 const SAVE_AUTO_NAME: String = "auto"
 ## File extension used by save files
-const SAVE_EXTENSION_NAME: String = ".bin"
+const SAVE_EXTENSION_NAME: String = ".save"
 ## Encryption key, can be changed but will break all existing saves if changed
 const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
 
@@ -293,10 +293,6 @@ func _read_backend(path: String) -> Dictionary:
 	if data == null:
 		printerr("Cannot parse %s as json string, data is null! (%s)" % [path, content])
 		return {}
-	
-	# Print message saying that the dictionary is empty if needed
-	if data.is_empty():
-		push_warning("File at %s was parsed correctly, but contains no data" % [path])
 	
 	# Return the JSON data to then be converted into a object later
 	return data
