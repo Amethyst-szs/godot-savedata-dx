@@ -14,6 +14,8 @@ var editor_plugin: EditorPlugin
 const root_slot_path: String = "res://addons/savedata-dx/data_slot.gd"
 const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 
+const max_search_results: int = 50
+
 # Header buttons
 @onready var head_button_load := %HeadLoad
 @onready var head_button_save := %HeadSave
@@ -21,7 +23,10 @@ const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 @onready var head_button_edit_common := %HeadEditCommon
 @onready var head_button_info := %HeadInfo
 @onready var head_button_close := %HeadClose
-@onready var head_file_name := %OpenFileTextLabel
+
+# Search window
+@onready var search_box := %SearchBox
+@onready var search_result_box := %SearchResultBox
 
 # Code editor
 @onready var code_editor := %CodeEdit
@@ -37,12 +42,7 @@ const root_common_path: String = "res://addons/savedata-dx/data_common.gd"
 #region State Variables
 
 # Current editor information
-var open_file_path: String:
-	set (value):
-		head_file_name.text = value
-		open_file_path = value
-	get:
-		return open_file_path
+var open_file_path: String
 
 var unsaved_changes: bool = false:
 	set (value):
@@ -52,8 +52,6 @@ var unsaved_changes: bool = false:
 			head_button_save.text = " Save"
 		
 		unsaved_changes = value
-	get:
-		return unsaved_changes
 
 #endregion
 
@@ -62,6 +60,9 @@ var unsaved_changes: bool = false:
 func _ready() -> void:
 	if not is_instance_valid(editor_plugin):
 		return
+	
+	# Disable save button
+	code_editor_close()
 	
 	# Ensure various folders
 	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
@@ -143,6 +144,58 @@ func _on_inspector_select_file(path: String) -> void:
 
 #endregion
 
+#region JSON Searching
+
+func update_text_search(text: String = ""):
+	# Clear out the list of search results
+	search_box.clear()
+	
+	for child in search_result_box.get_children():
+		search_result_box.remove_child(child)
+	
+	if open_file_path.is_empty() or text.is_empty():
+		code_editor.remove_search_highlight()
+		return
+	
+	var index_list: Array[int] = code_editor.setup_search_highlight(text)
+	
+	# Ensure there is at least one index in list
+	if index_list.is_empty():
+		return
+	
+	# Load in the new search results
+	for index in range(min(index_list.size(), max_search_results)):
+		var button := Button.new()
+		var line_text: String = code_editor.get_line(index_list[index])
+		line_text = line_text.replace("\t", "")
+		line_text = line_text.replace("\"", "")
+		line_text = line_text.replace(",", "")
+		
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.text = line_text
+		
+		button.pressed.connect(_jump_to_search_result.bind(index_list[index]))
+		search_result_box.add_child(button)
+	
+	# Add notice to bottom if not every result was given a button
+	if index_list.size() > max_search_results:
+		var label := Label.new()
+		label.text = "...and %s more results" % [index_list.size() - max_search_results]
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		
+		search_result_box.add_child(label)
+
+func _on_search_box_submitted(new_text: String):
+	update_text_search(new_text)
+
+func _on_search_button():
+	update_text_search(search_box.text)
+
+func _jump_to_search_result(line: int):
+	code_editor.set_caret_line(line)
+
+#endregion
+
 #region Utility
 
 func _on_code_edit_text_changed():
@@ -174,6 +227,8 @@ func code_editor_close(text: String = "Open a file or change edit mode in the to
 	head_button_save.disabled = true
 	code_error_footer.visible = false
 	
+	update_text_search()
+	
 	code_editor.clear_undo_history()
 
 func code_editor_open() -> void:
@@ -184,6 +239,8 @@ func code_editor_open() -> void:
 	code_editor.placeholder_text = ""
 	head_button_save.disabled = false
 	code_error_footer.visible = false
+	
+	update_text_search()
 	
 	code_editor.clear_undo_history()
 
@@ -216,6 +273,8 @@ func code_editor_open_file(path: String) -> void:
 	code_editor.text = content
 	code_editor.placeholder_text = ""
 	head_button_save.disabled = false
+	
+	update_text_search()
 	
 	code_editor.clear_undo_history()
 

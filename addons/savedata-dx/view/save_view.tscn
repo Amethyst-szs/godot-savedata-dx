@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cddem2i73sbap"]
+[gd_scene load_steps=5 format=3 uid="uid://cddem2i73sbap"]
 
 [ext_resource type="Script" path="res://addons/savedata-dx/view/save_view.gd" id="1_sit27"]
 [ext_resource type="CodeHighlighter" uid="uid://cva1xputdk2d7" path="res://addons/savedata-dx/view/highlighter.tres" id="2_cnvvi"]
+[ext_resource type="Script" path="res://addons/savedata-dx/view/code_edit.gd" id="3_yjeu0"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hnoec"]
 bg_color = Color(0.294118, 0, 0.0313726, 1)
@@ -51,6 +52,14 @@ layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 3
 
+[node name="HeadClose" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Close current file or return to root
+(Ctrl+W)"
+disabled = true
+text = " Close"
+
 [node name="HeadLoad" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -85,30 +94,14 @@ size_flags_vertical = 4
 text = "Help "
 icon_alignment = 2
 
-[node name="HSeparator" type="HSeparator" parent="Margin/VerticalSplit/Header/VBox"]
+[node name="CodeSplit" type="HSplitContainer" parent="Margin/VerticalSplit"]
 layout_mode = 2
+size_flags_vertical = 3
 
-[node name="Bottom" type="HBoxContainer" parent="Margin/VerticalSplit/Header/VBox"]
-layout_mode = 2
-
-[node name="HeadClose" type="Button" parent="Margin/VerticalSplit/Header/VBox/Bottom"]
+[node name="CodeEdit" type="CodeEdit" parent="Margin/VerticalSplit/CodeSplit"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Close current file or return to root
-(Ctrl+W)"
-disabled = true
-text = " Close"
-flat = true
-
-[node name="OpenFileTextLabel" type="Label" parent="Margin/VerticalSplit/Header/VBox/Bottom"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.658824, 0.658824, 0.658824, 1)
-vertical_alignment = 1
-
-[node name="CodeEdit" type="CodeEdit" parent="Margin/VerticalSplit"]
-unique_name_in_owner = true
-layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 minimap_draw = true
 minimap_width = 60
@@ -120,6 +113,36 @@ draw_tabs = true
 gutters_draw_line_numbers = true
 auto_brace_completion_enabled = true
 auto_brace_completion_highlight_matching = true
+script = ExtResource("3_yjeu0")
+
+[node name="Search" type="VBoxContainer" parent="Margin/VerticalSplit/CodeSplit"]
+layout_mode = 2
+
+[node name="SearchBox" type="LineEdit" parent="Margin/VerticalSplit/CodeSplit/Search"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+placeholder_text = "Search Query"
+alignment = 1
+max_length = 16
+
+[node name="SearchButton" type="Button" parent="Margin/VerticalSplit/CodeSplit/Search"]
+layout_mode = 2
+text = "Search"
+
+[node name="HSeparator" type="HSeparator" parent="Margin/VerticalSplit/CodeSplit/Search"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/VerticalSplit/CodeSplit/Search"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SearchResultBox" type="VBoxContainer" parent="Margin/VerticalSplit/CodeSplit/Search/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="ErrorFooter" type="PanelContainer" parent="Margin/VerticalSplit"]
 unique_name_in_owner = true
@@ -153,11 +176,13 @@ Check the error display for additional info"
 dialog_autowrap = true
 
 [connection signal="timeout" from="CompileTimer" to="." method="_on_compile_timer_timeout"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadClose" to="." method="_on_head_close_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadLoad" to="." method="_on_head_load_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSave" to="." method="_on_head_save_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditSlot" to="." method="_on_head_edit_slot_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditCommon" to="." method="_on_head_edit_common_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadInfo" to="." method="_on_head_info_pressed"]
-[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Bottom/HeadClose" to="." method="_on_head_close_pressed"]
-[connection signal="text_changed" from="Margin/VerticalSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
+[connection signal="text_changed" from="Margin/VerticalSplit/CodeSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
+[connection signal="text_submitted" from="Margin/VerticalSplit/CodeSplit/Search/SearchBox" to="." method="_on_search_box_submitted"]
+[connection signal="pressed" from="Margin/VerticalSplit/CodeSplit/Search/SearchButton" to="." method="_on_search_button"]
 [connection signal="file_selected" from="InspectorFileDialog" to="." method="_on_inspector_select_file"]
