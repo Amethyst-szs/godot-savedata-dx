@@ -5,11 +5,6 @@ const SaveView = preload("./view/save_view.tscn")
 var save_view
 
 func _enter_tree():
-	# Ensure various folders
-	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
-	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/slot/")
-	DirAccess.make_dir_recursive_absolute("res://addons/savedata-dx/common/")
-	
 	# Setup singletons for accessing and holding save data
 	add_autoload_singleton("SaveAccessor", "res://addons/savedata-dx/backend/save_accessor.gd")
 	add_autoload_singleton("SaveHolder", "res://addons/savedata-dx/backend/save_holder.gd")
@@ -21,7 +16,7 @@ func _enter_tree():
 	# Instantiate save view main screen and hide from view
 	save_view = SaveView.instantiate()
 	save_view.editor_plugin = self
-	get_editor_interface().get_editor_main_screen().add_child(save_view)
+	EditorInterface.get_editor_main_screen().add_child(save_view)
 	_make_visible(false)
 
 func _exit_tree():
@@ -41,7 +36,7 @@ func _make_visible(visible):
 		save_view.visible = visible
 
 func _get_plugin_name():
-	return "SaveData"
+	return "Save"
 
 func _get_plugin_icon():
 	return get_editor_interface().get_base_control().get_theme_icon("Save", "EditorIcons")
