@@ -5,7 +5,7 @@ extends Control
 
 # SaveData accessor script
 const accessor_script = preload("res://addons/savedata-dx/backend/save_accessor.gd")
-var accessor_inst = accessor_script.new()
+var accessor_inst = null
 
 # Reference to editor plugin
 var editor_plugin: EditorPlugin
@@ -64,11 +64,15 @@ func _ready() -> void:
 	if not is_instance_valid(editor_plugin):
 		return
 	
+	# Setup save accessor
+	accessor_inst = accessor_script.new()
+	add_child(accessor_inst)
+	
 	# Disable save button
 	code_editor_close()
 	
 	# Ensure the save directory in user folder
-	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
+	DirAccess.make_dir_recursive_absolute(accessor_inst.SAVE_DIR)
 	
 	# Setup settings menu dialog
 	settings_dialog.theme = EditorInterface.get_editor_theme()

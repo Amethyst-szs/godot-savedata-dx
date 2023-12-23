@@ -17,18 +17,23 @@ var settings: Script = preload("res://addons/savedata-dx/settings.gd")
 
 #endregion
 
-#region Constants
+#region Settings
 
 ## Directory to store save files
-const SAVE_DIR: String = "user://sv/"
+var SAVE_DIR: String = ""
 ## Name of the common file
-const SAVE_COMMON_NAME: String = "common"
+var SAVE_COMMON_NAME: String = ""
 ## Name of the automatic save file
-const SAVE_AUTO_NAME: String = "auto"
+var SAVE_AUTO_NAME: String = ""
 ## File extension used by save files
-const SAVE_EXTENSION_NAME: String = ".save"
-## Encryption key, can be changed but will break all existing saves if changed
-const KEY: String = "no@NqlqGu8PTG#weQ77t$%bBQ9$HG5itZ#8#Xnbd%&L$y5Sd"
+var SAVE_EXTENSION_NAME: String = ""
+
+func setup_settings_data():
+	SAVE_DIR = settings.get_setting("SAVE_DIR")
+	SAVE_COMMON_NAME = settings.get_setting("SAVE_COMMON_NAME")
+	SAVE_AUTO_NAME = settings.get_setting("SAVE_AUTO_NAME")
+	SAVE_EXTENSION_NAME = settings.get_setting("SAVE_EXTENSION_NAME")
+	print(SAVE_DIR, SAVE_COMMON_NAME, SAVE_AUTO_NAME, SAVE_EXTENSION_NAME)
 
 #endregion
 
@@ -168,15 +173,6 @@ func read_common() -> void:
 
 #endregion
 
-#region Initalization
-
-func _init():
-	# Prepare the settings menu if this is in the editor
-	if Engine.is_editor_hint():
-		settings.prepare()
-
-#endregion
-
 #region Backend functions called by thread
 
 ## Not intended for the end user.  
@@ -254,7 +250,7 @@ func _write_backend(name: String, object) -> bool:
 	var file_path = SAVE_DIR + name + SAVE_EXTENSION_NAME
 	
 	# Attempt to open new file and print an error if it fails
-	var file = FileAccess.open_encrypted_with_pass(file_path, FileAccess.WRITE, KEY)
+	var file = FileAccess.open_encrypted_with_pass(file_path, FileAccess.WRITE, settings.get_setting("KEY"))
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
 		return false
@@ -276,7 +272,7 @@ func _write_backend_with_json_string(path: String, json_string: String) -> bool:
 	DirAccess.make_dir_absolute(SAVE_DIR)
 	
 	# Attempt to open new file and print an error if it fails
-	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.WRITE, KEY)
+	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.WRITE, settings.get_setting("KEY"))
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
 		return false
@@ -318,7 +314,7 @@ func _read_backend_raw_data(path: String) -> String:
 		return ""
 	
 	# Open the file and return if something goes wrong (another program controlling it for example)
-	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.READ, KEY)
+	var file = FileAccess.open_encrypted_with_pass(path, FileAccess.READ, settings.get_setting("KEY"))
 	if file == null:
 		printerr("FileAccess open error: " + str(FileAccess.get_open_error()))
 		return ""
@@ -376,6 +372,13 @@ var is_thread_busy: bool = false:
 var is_thread_terminate: bool = false
 
 func _ready():
+	# Prepare copy of frequently used settings data
+	setup_settings_data()
+	
+	# Prepare the settings menu if this is in the editor
+	if Engine.is_editor_hint():
+		settings.prepare()
+	
 	# Setup thread and and its components
 	thread_semaphore = Semaphore.new()
 	
