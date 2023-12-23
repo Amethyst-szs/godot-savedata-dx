@@ -33,7 +33,6 @@ func setup_settings_data():
 	SAVE_COMMON_NAME = settings.get_setting("SAVE_COMMON_NAME")
 	SAVE_AUTO_NAME = settings.get_setting("SAVE_AUTO_NAME")
 	SAVE_EXTENSION_NAME = settings.get_setting("SAVE_EXTENSION_NAME")
-	print(SAVE_DIR, SAVE_COMMON_NAME, SAVE_AUTO_NAME, SAVE_EXTENSION_NAME)
 
 #endregion
 
