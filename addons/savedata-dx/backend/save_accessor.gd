@@ -9,8 +9,11 @@ class_name SaveAccessorPlugin
 #region Imports
 
 # Include datatype parser for converting Object into JSON
-const datatype_dict_parser = preload("res://addons/savedata-dx/backend/datatype_parser.gd")
+const datatype_dict_parser: Script = preload("res://addons/savedata-dx/backend/datatype_parser.gd")
 var dict_parse = datatype_dict_parser.new()
+
+# Include settings script for accessing and modifying save data settings
+var settings: Script = preload("res://addons/savedata-dx/settings.gd")
 
 #endregion
 
@@ -162,6 +165,15 @@ func read_common() -> void:
 		
 	thread_request.type = ThreadRequestType.READ_COMMON
 	thread_semaphore.post()
+
+#endregion
+
+#region Initalization
+
+func _init():
+	# Prepare the settings menu if this is in the editor
+	if Engine.is_editor_hint():
+		settings.prepare()
 
 #endregion
 

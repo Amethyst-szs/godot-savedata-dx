@@ -4,6 +4,10 @@ extends CodeEdit
 var highlight_color: Color = Color.BLACK
 
 func _ready():
+	if not Engine.is_editor_hint():
+		queue_free()
+		return
+	
 	var settings = EditorInterface.get_editor_settings()
 	highlight_color = settings.get_setting("text_editor/theme/highlighting/background_color")
 	highlight_color = highlight_color.lightened(0.15)

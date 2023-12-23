@@ -21,6 +21,7 @@ const max_search_results: int = 50
 @onready var head_button_save := %HeadSave
 @onready var head_button_edit_slot := %HeadEditSlot
 @onready var head_button_edit_common := %HeadEditCommon
+@onready var head_button_settings := %HeadSettings
 @onready var head_button_info := %HeadInfo
 @onready var head_button_close := %HeadClose
 
@@ -36,6 +37,8 @@ const max_search_results: int = 50
 # Dialog popups
 @onready var inspector_file_dialog := $InspectorFileDialog
 @onready var inspector_save_fail_dialog := $InspectorSaveFailDialog
+@onready var settings_dialog := $SettingsDialog
+@onready var settings_view := %SettingsView
 
 #endregion
 
@@ -66,6 +69,10 @@ func _ready() -> void:
 	
 	# Ensure the save directory in user folder
 	DirAccess.make_dir_recursive_absolute(SaveAccessorPlugin.SAVE_DIR)
+	
+	# Setup settings menu dialog
+	settings_dialog.theme = EditorInterface.get_editor_theme()
+	settings_view.main_view = self
 	
 	apply_theme()
 
@@ -113,6 +120,9 @@ func _on_head_edit_common_pressed():
 	var script: Script = load("res://addons/savedata-dx/data_common.gd")
 	EditorInterface.edit_script(script)
 	EditorInterface.set_main_screen_editor("Script")
+
+func _on_head_settings_pressed():
+	settings_dialog.popup()
 
 func _on_head_info_pressed():
 	OS.shell_open("https://github.com/Amethyst-szs/godot-savedata-dx/wiki")
@@ -286,6 +296,7 @@ func apply_theme() -> void:
 		head_button_save.icon = get_theme_icon("Save", "EditorIcons")
 		head_button_edit_slot.icon = get_theme_icon("Edit", "EditorIcons")
 		head_button_edit_common.icon = get_theme_icon("EditInternal", "EditorIcons")
+		head_button_settings.icon = get_theme_icon("Tools", "EditorIcons")
 		head_button_info.icon = get_theme_icon("Help", "EditorIcons")
 		head_button_close.icon = get_theme_icon("Back", "EditorIcons")
 		

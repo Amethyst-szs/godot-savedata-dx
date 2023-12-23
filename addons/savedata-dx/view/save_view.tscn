@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://cddem2i73sbap"]
+[gd_scene load_steps=6 format=3 uid="uid://cddem2i73sbap"]
 
 [ext_resource type="Script" path="res://addons/savedata-dx/view/save_view.gd" id="1_sit27"]
 [ext_resource type="CodeHighlighter" uid="uid://cva1xputdk2d7" path="res://addons/savedata-dx/view/highlighter.tres" id="2_cnvvi"]
 [ext_resource type="Script" path="res://addons/savedata-dx/view/code_edit.gd" id="3_yjeu0"]
+[ext_resource type="PackedScene" uid="uid://mo4wx8of0sdp" path="res://addons/savedata-dx/view/settings_view.tscn" id="4_j10q2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hnoec"]
 bg_color = Color(0.294118, 0, 0.0313726, 1)
@@ -85,6 +86,12 @@ unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Opens the common save in the Script Editor"
 text = "Edit Common"
+
+[node name="HeadSettings" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Opens the common save in the Script Editor"
+text = "Settings"
 
 [node name="HeadInfo" type="Button" parent="Margin/VerticalSplit/Header/VBox/Top"]
 unique_name_in_owner = true
@@ -175,12 +182,25 @@ dialog_text = "The save slot open in the inspector could not be saved!
 Check the error display for additional info"
 dialog_autowrap = true
 
+[node name="SettingsDialog" type="Popup" parent="."]
+disable_3d = true
+title = "SaveData-DX Settings Menu"
+initial_position = 4
+size = Vector2i(720, 480)
+unresizable = false
+borderless = false
+min_size = Vector2i(360, 240)
+
+[node name="SettingsView" parent="SettingsDialog" instance=ExtResource("4_j10q2")]
+unique_name_in_owner = true
+
 [connection signal="timeout" from="CompileTimer" to="." method="_on_compile_timer_timeout"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadClose" to="." method="_on_head_close_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadLoad" to="." method="_on_head_load_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSave" to="." method="_on_head_save_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditSlot" to="." method="_on_head_edit_slot_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadEditCommon" to="." method="_on_head_edit_common_pressed"]
+[connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadSettings" to="." method="_on_head_settings_pressed"]
 [connection signal="pressed" from="Margin/VerticalSplit/Header/VBox/Top/HeadInfo" to="." method="_on_head_info_pressed"]
 [connection signal="text_changed" from="Margin/VerticalSplit/CodeSplit/CodeEdit" to="." method="_on_code_edit_text_changed"]
 [connection signal="text_submitted" from="Margin/VerticalSplit/CodeSplit/Search/SearchBox" to="." method="_on_search_box_submitted"]

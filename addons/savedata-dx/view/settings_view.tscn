@@ -1,0 +1,127 @@
+[gd_scene load_steps=2 format=3 uid="uid://mo4wx8of0sdp"]
+
+[ext_resource type="Script" path="res://addons/savedata-dx/view/settings_view.gd" id="1_lo05t"]
+
+[node name="SettingsView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_lo05t")
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Tabs" type="TabContainer" parent="Root"]
+layout_mode = 2
+current_tab = 1
+
+[node name="File Format" type="MarginContainer" parent="Root/Tabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 10
+
+[node name="ListScroll" type="ScrollContainer" parent="Root/Tabs/File Format"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Root/Tabs/File Format/ListScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DirectoryHeader" type="Label" parent="Root/Tabs/File Format/ListScroll/List"]
+layout_mode = 2
+text = "Save Directory:"
+
+[node name="Directory" type="LineEdit" parent="Root/Tabs/File Format/ListScroll/List"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "user://sv/"
+caret_blink = true
+
+[node name="HSeparator" type="HSeparator" parent="Root/Tabs/File Format/ListScroll/List"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CommonNameHeader" type="Label" parent="Root/Tabs/File Format/ListScroll/List"]
+layout_mode = 2
+text = "Common File Name:"
+
+[node name="CommonName" type="LineEdit" parent="Root/Tabs/File Format/ListScroll/List"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "common"
+caret_blink = true
+
+[node name="AutoNameHeader" type="Label" parent="Root/Tabs/File Format/ListScroll/List"]
+layout_mode = 2
+text = "Autosave File Name:"
+
+[node name="AutoName" type="LineEdit" parent="Root/Tabs/File Format/ListScroll/List"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "auto"
+caret_blink = true
+
+[node name="ExtensionHeader" type="Label" parent="Root/Tabs/File Format/ListScroll/List"]
+layout_mode = 2
+text = "File Extension:"
+
+[node name="Extension" type="LineEdit" parent="Root/Tabs/File Format/ListScroll/List"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = ".save"
+caret_blink = true
+
+[node name="Encryption" type="MarginContainer" parent="Root/Tabs"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 10
+
+[node name="ListScroll" type="ScrollContainer" parent="Root/Tabs/Encryption"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Root/Tabs/Encryption/ListScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="EncryptionHeader" type="Label" parent="Root/Tabs/Encryption/ListScroll/List"]
+layout_mode = 2
+text = "Encryption Key ( Changing this key will break all current save files!!! )"
+
+[node name="Field" type="HBoxContainer" parent="Root/Tabs/Encryption/ListScroll/List"]
+layout_mode = 2
+
+[node name="EncryptionReroll" type="Button" parent="Root/Tabs/Encryption/ListScroll/List/Field"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reroll"
+
+[node name="EncryptionKey" type="LineEdit" parent="Root/Tabs/Encryption/ListScroll/List/Field"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+editable = false
+
+[connection signal="text_changed" from="Root/Tabs/File Format/ListScroll/List/Directory" to="." method="_on_directory_text_changed"]
+[connection signal="text_changed" from="Root/Tabs/File Format/ListScroll/List/CommonName" to="." method="_on_common_name_text_changed"]
+[connection signal="text_changed" from="Root/Tabs/File Format/ListScroll/List/AutoName" to="." method="_on_auto_name_text_changed"]
+[connection signal="text_changed" from="Root/Tabs/File Format/ListScroll/List/Extension" to="." method="_on_extension_text_changed"]
+[connection signal="pressed" from="Root/Tabs/Encryption/ListScroll/List/Field/EncryptionReroll" to="." method="_on_encryption_reroll_pressed"]
