@@ -189,6 +189,8 @@ func _write_slot_thread_func(index: int, is_auto_slot: bool) -> void:
 		call_deferred("emit_signal", "save_slot_complete")
 	else:
 		call_deferred("emit_signal", "save_error")
+	
+	thread_semaphore.post()
 
 ## Not intended for the end user.  
 ## Functionality for save slot reading, handled on a seperate thread
@@ -212,6 +214,8 @@ func _read_slot_thread_func(index: int, is_auto_slot: bool) -> void:
 	
 	# Tell the signal that the load is finished
 	call_deferred("emit_signal", "load_slot_complete")
+	
+	thread_semaphore.post()
 
 ## Not intended for the end user.  
 ## Functionality for common writing, handled on a seperate thread
@@ -221,6 +225,8 @@ func _write_common_thread_func() -> void:
 		call_deferred("emit_signal", "save_common_complete")
 	else:
 		call_deferred("emit_signal", "save_error")
+	
+	thread_semaphore.post()
 
 ## Not intended for the end user.  
 ## Functionality for common reading, handled on a seperate thread
@@ -228,6 +234,7 @@ func _read_common_thread_func() -> void:
 	# Get dictionary from file in save directory
 	var dict: Dictionary = _read_backend_by_name(SAVE_COMMON_NAME)
 	if dict.is_empty():
+		printerr("SaveAccessor common data load error")
 		call_deferred("emit_signal", "load_error")
 		return
 	
@@ -237,6 +244,8 @@ func _read_common_thread_func() -> void:
 	
 	# Tell the signal that the load is finished
 	call_deferred("emit_signal", "load_slot_complete")
+	
+	thread_semaphore.post()
 
 # Backend functions handling reading and writing of data
 
@@ -363,8 +372,10 @@ var is_thread_busy: bool = false:
 		is_thread_busy = value
 		
 		if value:
+			print("SaveAccessor thread now busy")
 			call_deferred("emit_signal", "thread_busy")
 		else:
+			print("SaveAccessor thread completed work")
 			call_deferred("emit_signal", "thread_complete")
 
 ## Should the thread be terminated
@@ -393,13 +404,17 @@ func _thread_func():
 		
 		match(thread_request.type):
 			ThreadRequestType.WRITE_SLOT:
-				await _write_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				_write_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				thread_semaphore.wait()
 			ThreadRequestType.READ_SLOT:
-				await _read_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				_read_slot_thread_func(thread_request.slot_id, thread_request.is_slot_auto)
+				thread_semaphore.wait()
 			ThreadRequestType.WRITE_COMMON:
-				await _write_common_thread_func()
+				_write_common_thread_func()
+				thread_semaphore.wait()
 			ThreadRequestType.READ_COMMON:
-				await _read_common_thread_func()
+				_read_common_thread_func()
+				thread_semaphore.wait()
 		
 		is_thread_busy = false
 		
@@ -429,7 +444,7 @@ func _object_to_dict(obj: Object) -> Dictionary:
 	# Iterate through all members
 	for member in members:
 		member_index += 1
-		if member_index <= 3:
+		if member_index <= 2:
 			continue
 		
 		# Write the member to dictionary depending on type of member
@@ -488,8 +503,10 @@ func _dict_to_object(dict: Dictionary, obj_ref: Array) -> void:
 		# Perform different behavior depending on the type of this member
 		match(typeof(member[0])):
 			TYPE_NIL: # Make sure this property exists on the object
-				push_warning("Loading SaveData: Property \"%s\" does not exist on object"
-				% [dict.keys()[key]])
+				if not dict.keys()[key].contains(".gd"):
+					push_warning("Loading SaveData: Property \"%s\" does not exist on object"
+					% [dict.keys()[key]])
+				
 				continue
 			TYPE_OBJECT: # Call self again with sub-object
 				_dict_to_object(dict.values()[key], member)
